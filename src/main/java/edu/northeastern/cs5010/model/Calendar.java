@@ -10,8 +10,27 @@ public class Calendar {
   private String title;
   private final List<Event> eventList = new ArrayList<Event>();
 
+  // Additional configuration
+  private Boolean allowConflictEvents = false;
+
   public Calendar(String title) {
     this.title = title;
+  }
+
+  public void addEvent(Event newEvent) {
+
+    for (Event existingEvent : eventList) {
+      if (eventList.contains(newEvent)) {
+        throw new IllegalArgumentException("Same event exists in this calendar");
+      }
+
+      if (allowConflictEvents == false && newEvent.isOverlapping(existingEvent)) {
+        throw new IllegalArgumentException("There is an overlapping event, you can turn on "
+            + "allowConflictEvents in calendar setting");
+      }
+    }
+    eventList.add(newEvent);
+    System.out.println("Add event successful");
   }
 
   public String getTitle() {
@@ -24,6 +43,14 @@ public class Calendar {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  public Boolean getAllowConflict() {
+    return allowConflictEvents;
+  }
+
+  public void setAllowConflict(Boolean b) {
+    this.allowConflictEvents = b;
   }
 
   @Override

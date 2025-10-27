@@ -27,9 +27,11 @@ public class Event {
   private LocalTime endTime;
   private Boolean isPublic;
   private String description;
+  private Boolean isRecurrent;
+  private String location;   // TODO: use proper geolocation type
 
-  // TODO: use proper geolocation type
-  private String location;
+  // helper set to label an event instance (ex: allDay, )
+
 
   private Event(Builder builder) {
     this.subject = builder.subject;
@@ -40,6 +42,12 @@ public class Event {
     this.isPublic = builder.isPublic;
     this.description = builder.description;
     this.location = builder.location;
+    this.isRecurrent = builder.isRecurrent;
+  }
+
+  public Boolean isOverlapping(Event e) {
+    return this.startTime.isAfter(e.startTime) && this.startTime.isBefore(e.endTime) ||
+        this.endTime.isAfter(e.startTime) && this.endTime.isBefore(e.endTime);
   }
 
   /**
@@ -58,6 +66,7 @@ public class Event {
     private Boolean isPublic;
     private String description;
     private String location;
+    private Boolean isRecurrent;
 
 
     public Builder(String subject, String startDate, String endDate) {
@@ -105,6 +114,14 @@ public class Event {
     public Builder location (String location) {
       this.location = location;
       return this;
+    }
+    public Builder isRecurrent(Boolean b) {
+      this.isRecurrent = b;
+      return this;
+    }
+
+    public Event build() {
+      return new Event(this);
     }
   }
 
@@ -170,6 +187,14 @@ public class Event {
 
   public void setLocation(String location) {
     this.location = location;
+  }
+
+  public Boolean getRecurrent() {
+    return isRecurrent;
+  }
+
+  public void setRecurrent(Boolean recurrent) {
+    isRecurrent = recurrent;
   }
 
   @Override
