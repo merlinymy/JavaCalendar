@@ -18,8 +18,8 @@ class EventTest {
         .build();
 
     assertEquals("Team Meeting", event.getSubject());
-    assertEquals("2025-11-01", event.getStartDate().toString());
-    assertEquals("2025-11-01", event.getEndDate().toString());
+    assertEquals("2025-11-01", event.getStartDate());
+    assertEquals("2025-11-01", event.getEndDate());
     assertNull(event.getStartTime());
     assertNull(event.getEndTime());
     assertNull(event.getPublic());
@@ -38,10 +38,10 @@ class EventTest {
         .build();
 
     assertEquals("Team Meeting", event.getSubject());
-    assertEquals("2025-11-01", event.getStartDate().toString());
-    assertEquals("2025-11-01", event.getEndDate().toString());
-    assertEquals("09:00:00", event.getStartTime().toString());
-    assertEquals("10:30:00", event.getEndTime().toString());
+    assertEquals("2025-11-01", event.getStartDate());
+    assertEquals("2025-11-01", event.getEndDate());
+    assertEquals("09:00:00", event.getStartTime());
+    assertEquals("10:30:00", event.getEndTime());
     assertTrue(event.getPublic());
     assertEquals("Weekly team sync meeting", event.getDescription());
     assertEquals("Conference Room A", event.getLocation());
@@ -70,8 +70,8 @@ class EventTest {
         .build();
 
     assertEquals("Conference", event.getSubject());
-    assertEquals("2025-11-10", event.getStartDate().toString());
-    assertEquals("2025-11-12", event.getEndDate().toString());
+    assertEquals("2025-11-10", event.getStartDate());
+    assertEquals("2025-11-12", event.getEndDate());
     assertEquals("Annual tech conference", event.getDescription());
     assertEquals("Convention Center", event.getLocation());
   }
@@ -106,7 +106,7 @@ class EventTest {
         .startTime("09:00:00")
         .build();
 
-    assertEquals("09:00:00", event.getStartTime().toString());
+    assertEquals("09:00:00", event.getStartTime());
     assertNull(event.getEndTime());
   }
 
@@ -117,7 +117,7 @@ class EventTest {
         .build();
 
     assertNull(event.getStartTime());
-    assertEquals("10:00:00", event.getEndTime().toString());
+    assertEquals("10:00:00", event.getEndTime());
   }
 
   @Test
@@ -230,13 +230,13 @@ class EventTest {
   @Test
   void testGetStartDate() {
     Event event = new Event.Builder("Test Event", "2025-11-01", "2025-11-01").build();
-    assertEquals("2025-11-01", event.getStartDate().toString());
+    assertEquals("2025-11-01", event.getStartDate());
   }
 
   @Test
   void testGetEndDate() {
     Event event = new Event.Builder("Test Event", "2025-11-01", "2025-11-02").build();
-    assertEquals("2025-11-02", event.getEndDate().toString());
+    assertEquals("2025-11-02", event.getEndDate());
   }
 
   @Test
@@ -244,7 +244,7 @@ class EventTest {
     Event event = new Event.Builder("Test Event", "2025-11-01", "2025-11-01")
         .startTime("09:00:00")
         .build();
-    assertEquals("09:00:00", event.getStartTime().toString());
+    assertEquals("09:00:00", event.getStartTime());
   }
 
   @Test
@@ -252,7 +252,7 @@ class EventTest {
     Event event = new Event.Builder("Test Event", "2025-11-01", "2025-11-01")
         .endTime("10:00:00")
         .build();
-    assertEquals("10:00:00", event.getEndTime().toString());
+    assertEquals("10:00:00", event.getEndTime());
   }
 
   @Test
@@ -420,7 +420,7 @@ class EventTest {
         .endTime("01:00:00")
         .build();
 
-    assertEquals("00:00:00", event.getStartTime().toString());
+    assertEquals("00:00:00", event.getStartTime());
   }
 
   @Test
@@ -430,7 +430,7 @@ class EventTest {
         .endTime("23:59:59")
         .build();
 
-    assertEquals("23:59:59", event.getEndTime().toString());
+    assertEquals("23:59:59", event.getEndTime());
   }
 
   @Test
@@ -473,7 +473,7 @@ class EventTest {
   @Test
   void testCreateEventOnLeapYear() {
     Event event = new Event.Builder("Meeting", "2024-02-29", "2024-02-29").build();
-    assertEquals("2024-02-29", event.getStartDate().toString());
+    assertEquals("2024-02-29", event.getStartDate());
   }
 
   @Test
@@ -483,8 +483,8 @@ class EventTest {
         .endTime("02:00:00")
         .build();
 
-    assertEquals("2025-12-31", event.getStartDate().toString());
-    assertEquals("2026-01-01", event.getEndDate().toString());
+    assertEquals("2025-12-31", event.getStartDate());
+    assertEquals("2026-01-01", event.getEndDate());
   }
 
   // ==================== Builder Pattern Tests ====================
@@ -513,13 +513,5 @@ class EventTest {
 
     assertNotNull(event1);
     assertNotNull(event2);
-  }
-
-  // ==================== isOverlapping Tests (placeholder) ====================
-
-  @Test
-  void isOverlapping() {
-    // This test is kept as a placeholder for future implementation
-    // The current implementation has issues with null checking
   }
 }
