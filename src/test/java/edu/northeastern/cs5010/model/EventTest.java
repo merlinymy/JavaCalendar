@@ -2,6 +2,7 @@ package edu.northeastern.cs5010.model;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.format.DateTimeParseException;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -102,22 +103,20 @@ class EventTest {
 
   @Test
   void testCreateEventWithStartTimeOnly() {
-    Event event = new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
-        .startTime("09:00:00")
-        .build();
-
-    assertEquals("09:00:00", event.getStartTime());
-    assertNull(event.getEndTime());
+    assertThrows(IllegalArgumentException.class, () -> {
+      new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
+          .startTime("09:00:00")
+          .build();
+    });
   }
 
   @Test
   void testCreateEventWithEndTimeOnly() {
-    Event event = new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
-        .endTime("10:00:00")
-        .build();
-
-    assertNull(event.getStartTime());
-    assertEquals("10:00:00", event.getEndTime());
+    assertThrows(IllegalArgumentException.class, ()->{
+      new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
+          .endTime("10:00:00")
+          .build();
+    });
   }
 
   @Test
@@ -212,7 +211,7 @@ class EventTest {
 
   @Test
   void testCreateEventWithInvalidTimeValue() {
-    assertThrows(IllegalArgumentException.class, () -> {
+    assertThrows(DateTimeParseException.class, () -> {
       new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
           .startTime("25:00:00")
           .build();
@@ -242,7 +241,7 @@ class EventTest {
   @Test
   void testGetStartTime() {
     Event event = new Event.Builder("Test Event", "2025-11-01", "2025-11-01")
-        .startTime("09:00:00")
+        .startTime("09:00:00").endTime("10:00:00")
         .build();
     assertEquals("09:00:00", event.getStartTime());
   }
@@ -250,7 +249,7 @@ class EventTest {
   @Test
   void testGetEndTime() {
     Event event = new Event.Builder("Test Event", "2025-11-01", "2025-11-01")
-        .endTime("10:00:00")
+        .endTime("10:00:00").startTime("09:00:00")
         .build();
     assertEquals("10:00:00", event.getEndTime());
   }
@@ -359,11 +358,11 @@ class EventTest {
   @Test
   void testEventInequalityDifferentTime() {
     Event event1 = new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
-        .startTime("09:00:00")
+        .startTime("09:00:00").endTime("10:00:00")
         .build();
 
     Event event2 = new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
-        .startTime("10:00:00")
+        .startTime("10:00:00").endTime("10:00:00")
         .build();
 
     assertNotEquals(event1, event2);
@@ -394,10 +393,11 @@ class EventTest {
         .build();
 
     String toString = event.toString();
+    System.out.println(toString);
     assertTrue(toString.contains("Meeting"));
     assertTrue(toString.contains("2025-11-01"));
-    assertTrue(toString.contains("09:00:00"));
-    assertTrue(toString.contains("10:00:00"));
+    assertTrue(toString.contains("09:00"));
+    assertTrue(toString.contains("10:00"));
   }
 
   @Test
