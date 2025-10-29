@@ -13,10 +13,19 @@ public class Calendar {
   // Additional configuration
   private Boolean allowConflictEvents = false;
 
+  /**
+   * Creates a new instance of the Calendar with the specified title.
+   *
+   * @param title the title of the calendar
+   */
   public Calendar(String title) {
     this.title = title;
   }
 
+
+  /**
+   *
+   */
   public void addEvent(Event newEvent) {
 
     for (Event existingEvent : eventList) {
@@ -24,7 +33,8 @@ public class Calendar {
         throw new IllegalArgumentException("Same event exists in this calendar");
       }
 
-      if (allowConflictEvents == false && newEvent.isOverlapping(existingEvent)) {
+      if (allowConflictEvents == false &&
+          (existingEvent.isOverlapping(newEvent) || newEvent.isOverlapping(existingEvent))) {
         throw new IllegalArgumentException("There is an overlapping event, you can turn on "
             + "allowConflictEvents in calendar setting");
       }

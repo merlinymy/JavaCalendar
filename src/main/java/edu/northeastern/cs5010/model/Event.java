@@ -3,7 +3,9 @@ package edu.northeastern.cs5010.model;
 import edu.northeastern.cs5010.util.CheckDateFormat;
 import edu.northeastern.cs5010.util.CheckTimeFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -27,13 +29,18 @@ public class Event {
   private LocalTime endTime;
   private Boolean isPublic;
   private String description;
-  private Boolean isRecurrent;
+
   private String location;   // TODO: use proper geolocation type
 
-  // helper set to label an event instance (ex: allDay, )
-
+  private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
   private Event(Builder builder) {
+
+    if (builder.startTime == null && builder.endTime != null ||
+        builder.endTime == null && builder.startTime != null) {
+      throw new IllegalArgumentException("You must not have only startTime or only endTime");
+    }
+
     this.subject = builder.subject;
     this.startDate = builder.startDate;
     this.endDate = builder.endDate;
@@ -42,12 +49,23 @@ public class Event {
     this.isPublic = builder.isPublic;
     this.description = builder.description;
     this.location = builder.location;
-    this.isRecurrent = builder.isRecurrent;
   }
 
   public Boolean isOverlapping(Event e) {
-    return this.startTime.isAfter(e.startTime) && this.startTime.isBefore(e.endTime) ||
-        this.endTime.isAfter(e.startTime) && this.endTime.isBefore(e.endTime);
+    if (this.startTime == null || e.startTime == null) {
+      return this.startDate.isAfter(e.startDate) && this.startDate.isBefore(e.endDate) ||
+          this.endDate.isAfter(e.startDate) && this.endDate.isBefore(e.endDate) ||
+          this.startDate.isEqual(e.startDate) || this.endDate.isEqual(e.startDate);
+    } else {
+      LocalDateTime thisStartLocalDateTime = this.startDate.atTime(this.startTime);
+      LocalDateTime thisEndLocalDateTime = this.endDate.atTime(this.endTime);
+      LocalDateTime eStartLocalDateTime = e.startDate.atTime(e.startTime);
+      LocalDateTime eEndLocalDateTime = e.endDate.atTime(e.endTime);
+
+      return thisStartLocalDateTime.isAfter(eStartLocalDateTime) && thisStartLocalDateTime.isBefore(eEndLocalDateTime) ||
+          thisEndLocalDateTime.isAfter(eStartLocalDateTime) && thisEndLocalDateTime.isBefore(eEndLocalDateTime) ||
+          thisStartLocalDateTime.isEqual(eStartLocalDateTime);
+    }
   }
 
   /**
@@ -66,11 +84,9 @@ public class Event {
     private Boolean isPublic;
     private String description;
     private String location;
-    private Boolean isRecurrent;
-
 
     public Builder(String subject, String startDate, String endDate) {
-      if (subject != null && !subject.isEmpty()) {
+      if (subject != null && !subject.trim().isEmpty()) {
         this.subject = subject;
       } else {
         throw new IllegalArgumentException("Subject must not be null or empty");
@@ -115,10 +131,6 @@ public class Event {
       this.location = location;
       return this;
     }
-    public Builder isRecurrent(Boolean b) {
-      this.isRecurrent = b;
-      return this;
-    }
 
     public Event build() {
       return new Event(this);
@@ -133,32 +145,32 @@ public class Event {
     this.subject = subject;
   }
 
-  public LocalDate getStartDate() {
-    return startDate;
+  public String getStartDate() {
+    return startDate.toString();
   }
 
   public void setStartDate(LocalDate startDate) {
     this.startDate = startDate;
   }
 
-  public LocalDate getEndDate() {
-    return endDate;
+  public String getEndDate() {
+    return endDate.toString();
   }
 
   public void setEndDate(LocalDate endDate) {
     this.endDate = endDate;
   }
 
-  public LocalTime getStartTime() {
-    return startTime;
+  public String getStartTime() {
+    return startTime == null ? null : startTime.format(timeFormatter);
   }
 
   public void setStartTime(LocalTime startTime) {
     this.startTime = startTime;
   }
 
-  public LocalTime getEndTime() {
-    return endTime;
+  public String getEndTime() {
+    return endTime == null ? null : endTime.format(timeFormatter);
   }
 
   public void setEndTime(LocalTime endTime) {
@@ -187,14 +199,6 @@ public class Event {
 
   public void setLocation(String location) {
     this.location = location;
-  }
-
-  public Boolean getRecurrent() {
-    return isRecurrent;
-  }
-
-  public void setRecurrent(Boolean recurrent) {
-    isRecurrent = recurrent;
   }
 
   @Override
