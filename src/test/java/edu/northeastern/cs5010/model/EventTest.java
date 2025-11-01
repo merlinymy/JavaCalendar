@@ -5,10 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.format.DateTimeParseException;
 import org.junit.jupiter.api.Test;
 
-/**
- * Test class for Event creation and validation.
- * These tests cover base Events only (not RecurrentEvents).
- */
 class EventTest {
 
   // ==================== Event Creation Tests ====================
