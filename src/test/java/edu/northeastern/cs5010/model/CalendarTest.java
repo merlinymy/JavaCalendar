@@ -2,6 +2,9 @@ package edu.northeastern.cs5010.model;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +19,27 @@ class CalendarTest {
   @BeforeEach
   void setUp() {
     calendar = new Calendar("Personal Calendar");
+  }
+
+  @Test
+  void addValidRecurrentEventsWithEndDateToAnEmptyCalendar(){
+    List<String> days = List.of("MONDAY", "SATURDAY");
+    RecurrencePattern pattern = new RecurrencePattern(5, days);
+
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-10-31"),
+        LocalTime.parse("10:30:00"),
+        LocalTime.parse("22:00:00"),
+        "Test Event",
+        true,
+        "Test Description",
+        "Test Location"
+    );
+
+    List<Event> recurrentEventList = recurrentEvent.getEvents();
+    calendar.getEventList().addAll(recurrentEventList);
+    assertEquals(5, calendar.getEventList().size());
   }
 
   // ==================== Calendar Creation Tests ====================
