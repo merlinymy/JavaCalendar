@@ -32,9 +32,9 @@ class RecurrencePatternTest {
   @Test
   void testRecurrentWithAValidDateFormatEndDate() {
     days.add("MONDAY");
-    String end_datetime = "2025-04-23 11:11:11";
+    String end_datetime = "2025-04-23";
     RecurrencePattern pattern = new RecurrencePattern(end_datetime, days);
-    assertEquals("2025-04-23 11:11:11", pattern.getDateTimeToEnd().toString());
+    assertEquals("2025-04-23", pattern.getDateTimeToEnd());
   }
 
   // Conflicts tests
@@ -45,7 +45,7 @@ class RecurrencePatternTest {
     days.addAll(Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY","SATURDAY","SUNDAY"));
     RecurrencePattern pattern = new RecurrencePattern(10, days);
     assertEquals(10, pattern.getRecurrenceNumToEnd());
-    assertEquals("MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY", pattern.getDays().toString().replace("[", "").replace("]", ""));
+    assertEquals("[MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]", pattern.getDays().toString());
   }
 
   @Test

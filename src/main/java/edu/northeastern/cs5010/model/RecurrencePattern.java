@@ -1,5 +1,6 @@
 package edu.northeastern.cs5010.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -9,17 +10,16 @@ import java.util.List;
  * Pattern used to create a recurrent event.
  */
 public class RecurrencePattern {
-  private int recurrenceNumToEnd;
-  private LocalDateTime dateTimeToEnd;
+  private Integer recurrenceNumToEnd;
+  private LocalDate dateTimeToEnd;
   private List<String> days;
-  private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
+  private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private enum RecurrenceDay {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
   }
 
-  public RecurrencePattern(int recurrenceNum, List<String> days) {
+  public RecurrencePattern(Integer recurrenceNum, List<String> days) {
     validateDaysAndAssignDays(days);
     validateRecurrenceNumAndAssignNum(recurrenceNum);
   }
@@ -34,10 +34,10 @@ public class RecurrencePattern {
   private void validateEndDateAndAssignEndDate(String dateTimeToEnd) {
 
     try {
-      LocalDateTime parsed = LocalDateTime.parse(dateTimeToEnd, formatter);
+      LocalDate parsed = LocalDate.parse(dateTimeToEnd, formatter);
       this.dateTimeToEnd = parsed;
     } catch (DateTimeParseException e) {
-      throw new IllegalArgumentException("dateTimeToEnd must be in the format of 'yyyy-MM-DD HH:mm:ss'");
+      throw new IllegalArgumentException("dateTimeToEnd must be in the format of 'yyyy-MM-dd'");
     }
   }
 
@@ -63,7 +63,7 @@ public class RecurrencePattern {
     }
   }
 
-  public int getRecurrenceNumToEnd() {
+  public Integer getRecurrenceNumToEnd() {
     return recurrenceNumToEnd;
   }
 
@@ -72,10 +72,13 @@ public class RecurrencePattern {
   }
 
   public String getDateTimeToEnd() {
+    if (dateTimeToEnd == null) {
+      return null;
+    }
     return dateTimeToEnd.format(formatter);
   }
 
-  public void setDateTimeToEnd(LocalDateTime dateTimeToEnd) {
+  public void setDateTimeToEnd(LocalDate dateTimeToEnd) {
     this.dateTimeToEnd = dateTimeToEnd;
   }
 
