@@ -84,20 +84,39 @@ public class RecurrentEvent{
 
         int indexOfCurrentDay = days.indexOf(currentDay);
 
-        // use dayRankingHelper to find what day comes next
-        if (indexOfCurrentDay == -1) {
+        // If the current day IS a recurrence day, create an event for it first
+        if (indexOfCurrentDay != -1) {
+          Event event = new Event.Builder(subject,
+              currentStartDate.format(dateFormatter),
+              currentStartDate.format(dateFormatter))
+              .startTime(startTime.format(timeFormatter))
+              .endTime(endTime.format(timeFormatter))
+              .description(description)
+              .isPublic(isPublic)
+              .location(location).build();
+
+          events.add(event);
+          recurrenceToEnd--;
+
+          if (recurrenceToEnd == 0) {
+            break;
+          }
+
+          // Move to the next recurrence day
+          if (indexOfCurrentDay == days.size() - 1) {
+            daysPointer = 0;
+          } else {
+            daysPointer = indexOfCurrentDay + 1;
+          }
+        } else {
+          // Current day is NOT a recurrence day, find the next one
           int currentDayRank = dayRankingHelper.get(currentDay);
           for (int i = 0; i <= days.size() - 1; i++) {
             int dayRank = dayRankingHelper.get(days.get(i));
             if (dayRank > currentDayRank) {
               daysPointer = i;
+              break;
             }
-          }
-        } else {
-          if (indexOfCurrentDay == days.size() - 1) {
-            daysPointer = 0;
-          } else {
-            daysPointer = indexOfCurrentDay + 1;
           }
         }
 
@@ -106,19 +125,6 @@ public class RecurrentEvent{
         int daysDiff = ((dayRankingHelper.get(nextDay) - dayRankingHelper.get(currentDay) - 1 + 7) % 7) + 1;
 
         currentStartDate = currentStartDate.plusDays(daysDiff);
-
-        recurrenceToEnd--;
-        daysPointer = daysPointer == days.size() - 1 ? 0 : daysPointer + 1;
-        Event event = new Event.Builder(subject,
-            currentStartDate.format(dateFormatter),
-            currentStartDate.format(dateFormatter))
-            .startTime(startTime.format(timeFormatter))
-            .endTime(endTime.format(timeFormatter))
-            .description(description)
-            .isPublic(isPublic)
-            .location(location).build();
-
-        events.add(event);
       }
 
     }
