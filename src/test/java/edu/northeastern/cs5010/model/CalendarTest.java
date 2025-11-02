@@ -39,10 +39,10 @@ class CalendarTest {
         "Conference Room B"
     );
 
-    List<Event> recurrentEventList = recurrentEvent.getEvents();
-    calendar.getEventList().addAll(recurrentEventList);
+    calendar.addRecurrentEvent(recurrentEvent);
 
-    assertEquals(5, calendar.getEventList().size());
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(5, recurrentEvent.getEvents().size());
   }
 
   @Test
@@ -61,11 +61,11 @@ class CalendarTest {
         "Studio B"
     );
 
-    List<Event> recurrentEventList = recurrentEvent.getEvents();
-    calendar.getEventList().addAll(recurrentEventList);
+    calendar.addRecurrentEvent(recurrentEvent);
 
     // From Nov 4 to Nov 20: Tuesdays (4, 11, 18) and Thursdays (6, 13, 20) = 6 events
-    assertEquals(6, calendar.getEventList().size());
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(6, recurrentEvent.getEvents().size());
   }
 
   @Test
@@ -100,10 +100,10 @@ class CalendarTest {
         "Office"
     );
 
-    calendar.getEventList().addAll(recurrentEvent1.getEvents());
-    calendar.getEventList().addAll(recurrentEvent2.getEvents());
+    calendar.addRecurrentEvent(recurrentEvent1);
+    calendar.addRecurrentEvent(recurrentEvent2);
 
-    assertEquals(8, calendar.getEventList().size());
+    assertEquals(2, calendar.getRecurrentEvents().size());
   }
 
   @Test
@@ -131,13 +131,14 @@ class CalendarTest {
         "Room A"
     );
 
-    // First event from recurrent series (Nov 12) should conflict with existing event
+    // Should throw exception because recurrent event conflicts with existing single event
     assertThrows(IllegalArgumentException.class, () -> {
-      calendar.addEvent(recurrentEvent.getEvents().get(0));
+      calendar.addRecurrentEvent(recurrentEvent);
     });
 
     // Verify calendar still only has the original event
     assertEquals(1, calendar.getEventList().size());
+    assertEquals(0, calendar.getRecurrentEvents().size());
   }
 
   @Test
@@ -165,11 +166,10 @@ class CalendarTest {
         "Lab"
     );
 
-    for (Event event : recurrentEvent.getEvents()) {
-      calendar.addEvent(event);
-    }
+    calendar.addRecurrentEvent(recurrentEvent);
 
-    assertEquals(4, calendar.getEventList().size()); // 1 single + 3 recurrent
+    assertEquals(1, calendar.getEventList().size()); // 1 single event
+    assertEquals(1, calendar.getRecurrentEvents().size()); // 1 recurrent event series
   }
 
   @Test
@@ -203,10 +203,10 @@ class CalendarTest {
         "Room 102"
     );
 
-    calendar.getEventList().addAll(morningEvents.getEvents());
-    calendar.getEventList().addAll(afternoonEvents.getEvents());
+    calendar.addRecurrentEvent(morningEvents);
+    calendar.addRecurrentEvent(afternoonEvents);
 
-    assertEquals(6, calendar.getEventList().size());
+    assertEquals(2, calendar.getRecurrentEvents().size());
   }
 
   @Test
@@ -225,8 +225,9 @@ class CalendarTest {
         "Office"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
-    assertEquals(10, calendar.getEventList().size());
+    calendar.addRecurrentEvent(recurrentEvent);
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(10, recurrentEvent.getEvents().size());
   }
 
   @Test
@@ -245,9 +246,10 @@ class CalendarTest {
         "Office"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
+    calendar.addRecurrentEvent(recurrentEvent);
 
-    assertEquals(4, calendar.getEventList().size());
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(4, recurrentEvent.getEvents().size());
     // First event should be on Monday, Nov 3
     assertEquals("2025-11-03", recurrentEvent.getEvents().get(0).getStartDate());
   }
@@ -268,8 +270,9 @@ class CalendarTest {
         "Location X"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
-    assertEquals(1, calendar.getEventList().size());
+    calendar.addRecurrentEvent(recurrentEvent);
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(1, recurrentEvent.getEvents().size());
   }
 
   @Test
@@ -288,8 +291,9 @@ class CalendarTest {
         "Home"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
-    assertEquals(4, calendar.getEventList().size());
+    calendar.addRecurrentEvent(recurrentEvent);
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(4, recurrentEvent.getEvents().size());
   }
 
   @Test
@@ -308,10 +312,10 @@ class CalendarTest {
         "Test Location"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
+    calendar.addRecurrentEvent(recurrentEvent);
 
     // Verify all events have correct properties
-    for (Event event : calendar.getEventList()) {
+    for (Event event : recurrentEvent.getEvents()) {
       assertEquals("Property Check Event", event.getSubject());
       assertEquals("15:00:00", event.getStartTime());
       assertEquals("16:30:00", event.getEndTime());
@@ -339,17 +343,18 @@ class CalendarTest {
         "Room A"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
-    assertEquals(3, calendar.getEventList().size());
+    calendar.addRecurrentEvent(recurrentEvent);
+    assertEquals(1, calendar.getRecurrentEvents().size());
 
-    // Add a single event on a different time
+    // Add a single event on a different time - should succeed since no conflict
     Event singleEvent = new Event.Builder("One-off Meeting", "2025-11-04", "2025-11-04")
         .startTime("14:00:00")
         .endTime("15:00:00")
         .build();
     calendar.addEvent(singleEvent);
 
-    assertEquals(4, calendar.getEventList().size());
+    assertEquals(1, calendar.getEventList().size());
+    assertEquals(1, calendar.getRecurrentEvents().size());
   }
 
   @Test
@@ -368,10 +373,11 @@ class CalendarTest {
         "Room 101"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
+    calendar.addRecurrentEvent(recurrentEvent);
 
     // Nov 3, 10, 17 = 3 Mondays
-    assertEquals(3, calendar.getEventList().size());
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(3, recurrentEvent.getEvents().size());
 
     // Verify last event is on the end date
     Event lastEvent = recurrentEvent.getEvents().get(recurrentEvent.getEvents().size() - 1);
@@ -424,11 +430,11 @@ class CalendarTest {
         "Workshop"
     );
 
-    calendar.getEventList().addAll(series1.getEvents());
-    calendar.getEventList().addAll(series2.getEvents());
-    calendar.getEventList().addAll(series3.getEvents());
+    calendar.addRecurrentEvent(series1);
+    calendar.addRecurrentEvent(series2);
+    calendar.addRecurrentEvent(series3);
 
-    assertEquals(11, calendar.getEventList().size()); // 3 + 6 + 2
+    assertEquals(3, calendar.getRecurrentEvents().size()); // 3 series
   }
 
   @Test
@@ -447,13 +453,14 @@ class CalendarTest {
         "Various"
     );
 
-    calendar.getEventList().addAll(recurrentEvent.getEvents());
+    calendar.addRecurrentEvent(recurrentEvent);
 
     // From Nov 5 to Nov 28:
     // Wednesdays: 5, 12, 19, 26 = 4
     // Fridays: 7, 14, 21, 28 = 4
     // Total = 8
-    assertEquals(8, calendar.getEventList().size());
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(8, recurrentEvent.getEvents().size());
   }
 
   @Test
@@ -473,17 +480,89 @@ class CalendarTest {
         "Office"
     );
 
-    // Add the events once
-    for (Event event : recurrentEvent.getEvents()) {
-      calendar.addEvent(event);
-    }
+    // Add the recurrent event once
+    calendar.addRecurrentEvent(recurrentEvent);
 
-    // Try to add the same events again
+    // Try to add the same recurrent event again
     assertThrows(IllegalArgumentException.class, () -> {
-      for (Event event : recurrentEvent.getEvents()) {
-        calendar.addEvent(event);
-      }
+      calendar.addRecurrentEvent(recurrentEvent);
     });
+  }
+
+  @Test
+  void testAddRecurrentEventConflictsWithAnotherRecurrentEvent() {
+    calendar.setAllowConflict(false);
+
+    // Add first recurrent event: Mondays 9-10am
+    List<String> days1 = List.of("MONDAY");
+    RecurrencePattern pattern1 = new RecurrencePattern(3, days1);
+    RecurrentEvent recurrentEvent1 = new RecurrentEvent(
+        pattern1,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Morning Meeting",
+        true,
+        "Weekly meeting",
+        "Room A"
+    );
+    calendar.addRecurrentEvent(recurrentEvent1);
+
+    // Try to add second recurrent event: Mondays 9:30-10:30am (conflicts)
+    List<String> days2 = List.of("MONDAY");
+    RecurrencePattern pattern2 = new RecurrencePattern(2, days2);
+    RecurrentEvent recurrentEvent2 = new RecurrentEvent(
+        pattern2,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:30:00"),
+        LocalTime.parse("10:30:00"),
+        "Another Meeting",
+        true,
+        "Conflicting meeting",
+        "Room B"
+    );
+
+    // Should throw exception because recurrent events conflict
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.addRecurrentEvent(recurrentEvent2);
+    });
+
+    // Verify only first recurrent event was added
+    assertEquals(1, calendar.getRecurrentEvents().size());
+  }
+
+  @Test
+  void testAddSingleEventConflictsWithRecurrentEvent() {
+    calendar.setAllowConflict(false);
+
+    // Add recurrent event: Wednesdays 2-3pm
+    List<String> days = List.of("WEDNESDAY");
+    RecurrencePattern pattern = new RecurrencePattern(3, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-05"),
+        LocalTime.parse("14:00:00"),
+        LocalTime.parse("15:00:00"),
+        "Weekly Review",
+        true,
+        "Team review",
+        "Conference Room"
+    );
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    // Try to add single event on Nov 12 (Wednesday) at 2:30-3:30pm (conflicts)
+    Event singleEvent = new Event.Builder("Special Event", "2025-11-12", "2025-11-12")
+        .startTime("14:30:00")
+        .endTime("15:30:00")
+        .build();
+
+    // Should throw exception because single event conflicts with recurrent event
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.addEvent(singleEvent);
+    });
+
+    assertEquals(0, calendar.getEventList().size());
+    assertEquals(1, calendar.getRecurrentEvents().size());
   }
 
   // ==================== Calendar Creation Tests ====================

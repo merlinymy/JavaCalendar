@@ -44,8 +44,66 @@ public class Calendar {
             + "allowConflictEvents in calendar setting");
       }
     }
+
+    // Check for conflicts with recurrent events
+    if (!allowConflictEvents) {
+      for (RecurrentEvent recurrentEvent : recurrentEvents) {
+        for (Event recurrentEventInstance : recurrentEvent.getEvents()) {
+          if (isOverlapping(recurrentEventInstance, newEvent)
+              || isOverlapping(newEvent, recurrentEventInstance)) {
+            throw new IllegalArgumentException("Event conflicts with existing recurrent event. "
+                + "You can turn on allowConflictEvents in calendar setting");
+          }
+        }
+      }
+    }
+
     eventList.add(newEvent);
     System.out.println("Add event successful");
+  }
+
+  /**
+   * Add a recurrent event to the calendar. Performs conflict check against both individual
+   * events and existing recurrent events before adding.
+   * @param newRecurrentEvent a recurrent event {@link RecurrentEvent} to be added
+   * @throws IllegalArgumentException if the recurrent event already exists, or if any of its
+   *     generated events would conflict with existing events when allowConflictEvents is false
+   */
+  public void addRecurrentEvent(RecurrentEvent newRecurrentEvent) {
+    // Check if this exact recurrent event already exists
+    if (recurrentEvents.contains(newRecurrentEvent)) {
+      throw new IllegalArgumentException("Same recurrent event exists in this calendar");
+    }
+
+    // If conflicts are not allowed, check for overlaps
+    if (!allowConflictEvents) {
+      List<Event> newEvents = newRecurrentEvent.getEvents();
+
+      // Check each generated event against individual events in the calendar
+      for (Event newEvent : newEvents) {
+        for (Event existingEvent : eventList) {
+          if (isOverlapping(existingEvent, newEvent) || isOverlapping(newEvent, existingEvent)) {
+            throw new IllegalArgumentException("Recurrent event conflicts with existing event. "
+                + "You can turn on allowConflictEvents in calendar setting");
+          }
+        }
+
+        // Check each generated event against events from existing recurrent events
+        for (RecurrentEvent existingRecurrentEvent : recurrentEvents) {
+          for (Event existingRecurrentEventInstance : existingRecurrentEvent.getEvents()) {
+            if (isOverlapping(existingRecurrentEventInstance, newEvent)
+                || isOverlapping(newEvent, existingRecurrentEventInstance)) {
+              throw new IllegalArgumentException("Recurrent event conflicts with existing "
+                  + "recurrent event. You can turn on allowConflictEvents in calendar setting");
+            }
+          }
+        }
+      }
+    }
+
+    // If no conflicts or conflicts are allowed, add the recurrent event
+    recurrentEvents.add(newRecurrentEvent);
+    System.out.println("Add recurrent event successful");
   }
 
 
