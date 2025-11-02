@@ -51,22 +51,7 @@ public class Event {
     this.location = builder.location;
   }
 
-  public Boolean isOverlapping(Event e) {
-    if (this.startTime == null || e.startTime == null) {
-      return this.startDate.isAfter(e.startDate) && this.startDate.isBefore(e.endDate) ||
-          this.endDate.isAfter(e.startDate) && this.endDate.isBefore(e.endDate) ||
-          this.startDate.isEqual(e.startDate) || this.endDate.isEqual(e.startDate);
-    } else {
-      LocalDateTime thisStartLocalDateTime = this.startDate.atTime(this.startTime);
-      LocalDateTime thisEndLocalDateTime = this.endDate.atTime(this.endTime);
-      LocalDateTime eStartLocalDateTime = e.startDate.atTime(e.startTime);
-      LocalDateTime eEndLocalDateTime = e.endDate.atTime(e.endTime);
 
-      return thisStartLocalDateTime.isAfter(eStartLocalDateTime) && thisStartLocalDateTime.isBefore(eEndLocalDateTime) ||
-          thisEndLocalDateTime.isAfter(eStartLocalDateTime) && thisEndLocalDateTime.isBefore(eEndLocalDateTime) ||
-          thisStartLocalDateTime.isEqual(eStartLocalDateTime);
-    }
-  }
 
   /**
    * Builder class for constructing Event objects using the Builder Pattern.
