@@ -565,6 +565,146 @@ class CalendarTest {
     assertEquals(1, calendar.getRecurrentEvents().size());
   }
 
+  @Test
+  void testAddRecurrentEventsStartingOnRecurrenceDay() {
+    // Start on Monday when MONDAY is in the recurrence pattern
+    List<String> days = List.of("MONDAY");
+    RecurrencePattern pattern = new RecurrencePattern(3, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-03"), // Monday, IS in recurrence days
+        LocalTime.parse("10:00:00"),
+        LocalTime.parse("11:00:00"),
+        "Monday Meeting",
+        true,
+        "Should include start date",
+        "Office"
+    );
+
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(3, recurrentEvent.getEvents().size());
+    // First event should be on the start date itself (Monday, Nov 3)
+    assertEquals("2025-11-03", recurrentEvent.getEvents().get(0).getStartDate());
+    // Second event should be next Monday (Nov 10)
+    assertEquals("2025-11-10", recurrentEvent.getEvents().get(1).getStartDate());
+    // Third event should be the Monday after (Nov 17)
+    assertEquals("2025-11-17", recurrentEvent.getEvents().get(2).getStartDate());
+  }
+
+  @Test
+  void testAddRecurrentEventsStartingOnRecurrenceDayWithMultipleDays() {
+    // Start on Wednesday when both WEDNESDAY and FRIDAY are in pattern
+    List<String> days = List.of("WEDNESDAY", "FRIDAY");
+    RecurrencePattern pattern = new RecurrencePattern(4, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-05"), // Wednesday, IS in recurrence days
+        LocalTime.parse("14:00:00"),
+        LocalTime.parse("15:00:00"),
+        "Biweekly Sync",
+        false,
+        "Should start on Wednesday",
+        "Room A"
+    );
+
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(4, recurrentEvent.getEvents().size());
+    // First event should be on start date (Wednesday, Nov 5)
+    assertEquals("2025-11-05", recurrentEvent.getEvents().get(0).getStartDate());
+    // Second event should be Friday, Nov 7
+    assertEquals("2025-11-07", recurrentEvent.getEvents().get(1).getStartDate());
+    // Third event should be Wednesday, Nov 12
+    assertEquals("2025-11-12", recurrentEvent.getEvents().get(2).getStartDate());
+    // Fourth event should be Friday, Nov 14
+    assertEquals("2025-11-14", recurrentEvent.getEvents().get(3).getStartDate());
+  }
+
+  @Test
+  void testAddRecurrentEventsWithEndDateStartingOnRecurrenceDay() {
+    // Start on Tuesday when TUESDAY is in pattern, with end date
+    List<String> days = List.of("TUESDAY", "THURSDAY");
+    RecurrencePattern pattern = new RecurrencePattern("2025-11-18", days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-04"), // Tuesday, IS in recurrence days
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Morning Standup",
+        true,
+        "Daily standup",
+        "Office"
+    );
+
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    // From Nov 4 to Nov 18:
+    // Tuesdays: Nov 4, 11, 18 = 3
+    // Thursdays: Nov 6, 13 = 2
+    // Total = 5 events
+    assertEquals(5, recurrentEvent.getEvents().size());
+    // First event should be on start date (Tuesday, Nov 4)
+    assertEquals("2025-11-04", recurrentEvent.getEvents().get(0).getStartDate());
+  }
+
+  @Test
+  void testAddRecurrentEventsSingleOccurrenceOnStartDate() {
+    // Start on Friday when FRIDAY is in pattern, only 1 occurrence
+    List<String> days = List.of("FRIDAY");
+    RecurrencePattern pattern = new RecurrencePattern(1, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-07"), // Friday, IS in recurrence days
+        LocalTime.parse("16:00:00"),
+        LocalTime.parse("17:00:00"),
+        "One-time Friday Event",
+        false,
+        "Should only create one event",
+        "Conference Room"
+    );
+
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    assertEquals(1, calendar.getRecurrentEvents().size());
+    assertEquals(1, recurrentEvent.getEvents().size());
+    // The only event should be on the start date itself (Friday, Nov 7)
+    assertEquals("2025-11-07", recurrentEvent.getEvents().get(0).getStartDate());
+  }
+
+  @Test
+  void testAddRecurrentEventsVerifyDatesWhenStartingOnRecurrenceDay() {
+    // Verify all generated dates are correct when starting on a recurrence day
+    List<String> days = List.of("MONDAY", "WEDNESDAY");
+    RecurrencePattern pattern = new RecurrencePattern(6, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-03"), // Monday, IS in recurrence days
+        LocalTime.parse("11:00:00"),
+        LocalTime.parse("12:00:00"),
+        "Test Event",
+        true,
+        "Testing dates",
+        "Office"
+    );
+
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    List<Event> events = recurrentEvent.getEvents();
+    assertEquals(6, events.size());
+
+    // Verify each date
+    assertEquals("2025-11-03", events.get(0).getStartDate()); // Monday
+    assertEquals("2025-11-05", events.get(1).getStartDate()); // Wednesday
+    assertEquals("2025-11-10", events.get(2).getStartDate()); // Monday
+    assertEquals("2025-11-12", events.get(3).getStartDate()); // Wednesday
+    assertEquals("2025-11-17", events.get(4).getStartDate()); // Monday
+    assertEquals("2025-11-19", events.get(5).getStartDate()); // Wednesday
+  }
+
   // ==================== Calendar Creation Tests ====================
 
   @Test
