@@ -26,10 +26,128 @@ public class Calendar {
     this.title = title;
   }
 
+  /**
+   * Retrieve an event given its subject, start date, and start time.
+   * @param subject the subject of an event.
+   * @param startDate the startDate of an event. Must be in the format of "yyyy-MM-dd".
+   * @param startTime the startTime of an event. Must be in the format of "HH:mm:ss".
+   * @return the first {@link Event} event object with given params.
+   */
+  public Event getOneEvent(String subject, String startDate, String startTime) {
+    Event res;
+
+    // check if a valid event exists in eventList
+    for (Event event : eventList) {
+      if (event.getSubject().equals(subject) && event.getStartDate().equals(startDate) &&
+          event.getStartTime().equals(startTime)) {
+        res = event;
+        return res;
+      }
+    }
+
+    // check if a valid event exists in the recurrentEventList
+    for (RecurrentEvent recurrentEvent : recurrentEvents) {
+      for (Event event : recurrentEvent.getEvents()) {
+        if (event.getSubject().equals(subject) && event.getStartDate().equals(startDate) &&
+            event.getStartTime().equals(startTime)) {
+          res = event;
+          return res;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Retrieve all events between a startDate and an endDate.
+   * @param startDate the startDate of a date range.
+   * @param endDate the endDate of a date range.
+   * @return a list of {@link Event} events that are between the startDate and the endDate.
+   */
+  public List<Event> getAllEventsInRange(String startDate, String endDate) {
+    List<Event> res = new ArrayList<>();
+
+    // query non-recurrent event list. Add valid events to res
+    for (Event event : eventList) {
+      if (checkIfEventIsInRange(event, startDate, endDate)) {
+        res.add(event);
+      }
+    }
+
+    // query recurrent event list. Add valid events to res
+    for (RecurrentEvent recurrentEvent : recurrentEvents) {
+      for (Event event : recurrentEvent.getEvents()) {
+        if (checkIfEventIsInRange(event, startDate, endDate)) {
+          res.add(event);
+        }
+      }
+    }
+
+    return res;
+  }
+
+  /**
+   * Check if an event exists on the provided date and at the provided time.
+   * @param date a date used to perform the check.
+   * @param time a time used to perform the check
+   * @return true if an event exists, false if an event doesn't exist.
+   */
+  public boolean isUserBusyOnDayAtTime(String date, String time) {
+    LocalDate targetDate = LocalDate.parse(date);
+    LocalTime targetTime = LocalTime.parse(time);
+    LocalDateTime targetDateTime = targetDate.atTime(targetTime);
+
+    // Check for non-recurrent events
+    for (Event event : eventList) {
+      if (isEventOccupyingDateTime(event, targetDate, targetDateTime)) {
+        return true;
+      }
+    }
+
+    // Check for recurrent events
+    for (RecurrentEvent recurrentEvent : recurrentEvents) {
+      for (Event event : recurrentEvent.getEvents()) {
+        if (isEventOccupyingDateTime(event, targetDate, targetDateTime)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private boolean isEventOccupyingDateTime(Event event, LocalDate targetDate,
+                                            LocalDateTime targetDateTime) {
+    LocalDate eventStartDate = LocalDate.parse(event.getStartDate());
+    LocalDate eventEndDate = LocalDate.parse(event.getEndDate());
+
+    boolean isDateInRange = (targetDate.isEqual(eventStartDate) || targetDate.isAfter(eventStartDate))
+        && (targetDate.isEqual(eventEndDate) || targetDate.isBefore(eventEndDate));
+
+    if (!isDateInRange) {
+      return false;
+    }
+
+    // If an event has no time, just check if the date matches
+    if (event.getStartTime() == null) {
+      return true;
+    }
+
+    // Check if the target time is between event's time range
+    LocalTime eventStartTime = LocalTime.parse(event.getStartTime());
+    LocalTime eventEndTime = LocalTime.parse(event.getEndTime());
+    LocalDateTime eventStart = eventStartDate.atTime(eventStartTime);
+    LocalDateTime eventEnd = eventEndDate.atTime(eventEndTime);
+
+    return (targetDateTime.isEqual(eventStart) || targetDateTime.isAfter(eventStart))
+        && targetDateTime.isBefore(eventEnd);
+  }
 
   /**
    * Add a non-recurrent event to the calendar. Performs conflict check before adding.
-   * @param newEvent an event {@link Event} to be added
+   * @param newEvent an event {@link Event} to be added.
+   * @throws IllegalArgumentException if conflict events exist in the calendar.
+   *
    */
   public void addEvent(Event newEvent) {
 
@@ -63,8 +181,7 @@ public class Calendar {
   }
 
   /**
-   * Add a recurrent event to the calendar. Performs conflict check against both individual
-   * events and existing recurrent events before adding.
+   * Add a recurrent event to the calendar. Performs conflict check before adding.
    * @param newRecurrentEvent a recurrent event {@link RecurrentEvent} to be added
    * @throws IllegalArgumentException if the recurrent event already exists, or if any of its
    *     generated events would conflict with existing events when allowConflictEvents is false
@@ -194,4 +311,15 @@ public class Calendar {
         ", eventList=" + eventList +
         '}';
   }
+
+  private boolean checkIfEventIsInRange (Event event, String startDate, String endDate) {
+    LocalDate eventStart = LocalDate.parse(event.getStartDate());
+    LocalDate eventEnd = LocalDate.parse(event.getEndDate());
+    LocalDate rangeStart = LocalDate.parse(startDate);
+    LocalDate rangeEnd = LocalDate.parse(endDate);
+
+    return (eventStart.isBefore(rangeEnd) || eventStart.isEqual(rangeEnd))
+        && (eventEnd.isAfter(rangeStart) || eventEnd.isEqual(rangeStart));
+  }
+
 }
