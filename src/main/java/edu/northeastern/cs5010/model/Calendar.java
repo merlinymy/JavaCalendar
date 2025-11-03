@@ -27,6 +27,31 @@ public class Calendar {
   }
 
   /**
+   * Retrieve an event given its unique ID.
+   * @param id the unique ID of the event.
+   * @return the {@link Event} with the given ID, or null if not found.
+   */
+  public Event getEventById(String id) {
+    // Check in eventList
+    for (Event event : eventList) {
+      if (event.getId().equals(id)) {
+        return event;
+      }
+    }
+
+    // Check in recurrentEvents
+    for (RecurrentEvent recurrentEvent : recurrentEvents) {
+      for (Event event : recurrentEvent.getEvents()) {
+        if (event.getId().equals(id)) {
+          return event;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Retrieve an event given its subject, start date, and start time.
    * @param subject the subject of an event.
    * @param startDate the startDate of an event. Must be in the format of "yyyy-MM-dd".
@@ -322,4 +347,131 @@ public class Calendar {
         && (eventEnd.isAfter(rangeStart) || eventEnd.isEqual(rangeStart));
   }
 
+  /**
+   * Edit an existing event in the calendar. Only non-null parameters will be updated.
+   * Pass null for any field you don't want to change.
+   *
+   * @param eventId the unique ID of the event to edit
+   * @param newSubject the new subject, or null to keep current
+   * @param newStartDate the new start date (format: "yyyy-MM-dd"), or null to keep current
+   * @param newEndDate the new end date (format: "yyyy-MM-dd"), or null to keep current
+   * @param newStartTime the new start time (format: "HH:mm:ss"), or null to keep current
+   * @param newEndTime the new end time (format: "HH:mm:ss"), or null to keep current
+   * @param newIsPublic the new visibility setting, or null to keep current
+   * @param newDescription the new description, or null to keep current
+   * @param newLocation the new location, or null to keep current
+   * @throws IllegalArgumentException if:
+   *     - The event with the given ID doesn't exist
+   *     - The new end date/time is before or equal to the new start date/time
+   *     - The updated event conflicts with another event (when allowConflictEvents is false)
+   */
+  public void editEvent(String eventId, String newSubject, String newStartDate, String newEndDate,
+                        String newStartTime, String newEndTime, Boolean newIsPublic,
+                        String newDescription, String newLocation) {
+    Event event = getEventById(eventId);
+
+    // Validate that the event exists
+    if (event == null) {
+      throw new IllegalArgumentException("Event with ID " + eventId + " not found in calendar");
+    }
+
+    // Determine the final values (use new values if provided, otherwise keep old values)
+    String finalSubject = newSubject != null ? newSubject : event.getSubject();
+    String finalStartDate = newStartDate != null ? newStartDate : event.getStartDate();
+    String finalEndDate = newEndDate != null ? newEndDate : event.getEndDate();
+    String finalStartTime = newStartTime != null ? newStartTime : event.getStartTime();
+    String finalEndTime = newEndTime != null ? newEndTime : event.getEndTime();
+    Boolean finalIsPublic = newIsPublic != null ? newIsPublic : event.getPublic();
+    String finalDescription = newDescription != null ? newDescription : event.getDescription();
+    String finalLocation = newLocation != null ? newLocation : event.getLocation();
+
+    // Validate that both times are null or both are non-null (for the final state)
+    if ((finalStartTime == null && finalEndTime != null) ||
+        (finalStartTime != null && finalEndTime == null)) {
+      throw new IllegalArgumentException("Both start time and end time must be null, "
+          + "or both must be non-null");
+    }
+
+    // Validate that end date/time is after start date/time
+    LocalDate startDate = LocalDate.parse(finalStartDate);
+    LocalDate endDate = LocalDate.parse(finalEndDate);
+
+    if (endDate.isBefore(startDate)) {
+      throw new IllegalArgumentException("End date cannot be before start date");
+    }
+
+    // If times are provided, validate them
+    if (finalStartTime != null && finalEndTime != null) {
+      LocalTime startTime = LocalTime.parse(finalStartTime);
+      LocalTime endTime = LocalTime.parse(finalEndTime);
+      LocalDateTime startDateTime = startDate.atTime(startTime);
+      LocalDateTime endDateTime = endDate.atTime(endTime);
+
+      if (endDateTime.isBefore(startDateTime) || endDateTime.isEqual(startDateTime)) {
+        throw new IllegalArgumentException("End date/time must be after start date/time");
+      }
+    }
+
+    // Create a temporary event with the final values for conflict checking
+    Event.Builder tempBuilder = new Event.Builder(finalSubject, finalStartDate, finalEndDate);
+
+    if (finalStartTime != null && finalEndTime != null) {
+      tempBuilder.startTime(finalStartTime).endTime(finalEndTime);
+    }
+
+    if (finalIsPublic != null) {
+      tempBuilder.isPublic(finalIsPublic);
+    }
+    if (finalDescription != null) {
+      tempBuilder.description(finalDescription);
+    }
+    if (finalLocation != null) {
+      tempBuilder.location(finalLocation);
+    }
+
+    Event tempEvent = tempBuilder.build();
+
+    // Check for conflicts if allowConflictEvents is false
+    if (!allowConflictEvents) {
+      // Check against all events in eventList (excluding the original event)
+      for (Event existingEvent : eventList) {
+        if (existingEvent != event) {
+          if (isOverlapping(tempEvent, existingEvent) ||
+              isOverlapping(existingEvent, tempEvent)) {
+            throw new IllegalArgumentException("Updated event conflicts with existing event");
+          }
+        }
+      }
+
+      // Check against all recurrent events (excluding the original event)
+      for (RecurrentEvent recurrentEvent : recurrentEvents) {
+        for (Event recurrentEventInstance : recurrentEvent.getEvents()) {
+          if (recurrentEventInstance != event) {
+            if (isOverlapping(tempEvent, recurrentEventInstance) ||
+                isOverlapping(recurrentEventInstance, tempEvent)) {
+              throw new IllegalArgumentException("Updated event conflicts with existing recurrent "
+                  + "event");
+            }
+          }
+        }
+      }
+    }
+
+    // All validations passed - update the event
+    event.setSubject(finalSubject);
+    event.setStartDate(startDate);
+    event.setEndDate(endDate);
+
+    if (finalStartTime != null && finalEndTime != null) {
+      event.setStartTime(LocalTime.parse(finalStartTime));
+      event.setEndTime(LocalTime.parse(finalEndTime));
+    } else {
+      event.setStartTime(null);
+      event.setEndTime(null);
+    }
+
+    event.setPublic(finalIsPublic);
+    event.setDescription(finalDescription);
+    event.setLocation(finalLocation);
+  }
 }
