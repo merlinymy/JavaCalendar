@@ -1,8 +1,11 @@
 package edu.northeastern.cs5010.model;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -612,6 +615,117 @@ public class Calendar {
     }
 
     System.out.println("All instances in recurrent event series edited successfully");
+  }
+
+  /**
+   * Exports the calendar to a CSV file in Google Calendar format.
+   * The CSV file will include all events from both the eventList and recurrentEvents.
+   *
+   * @param filePath the path where the CSV file should be saved
+   * @throws IOException if an I/O error occurs while writing the file
+   */
+  public void exportToCSV(String filePath) throws IOException {
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
+
+    try (FileWriter writer = new FileWriter(filePath)) {
+      // Write CSV header
+      writer.append("Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,Location,Private\n");
+
+      // Write all regular events
+      for (Event event : eventList) {
+        writeEventToCSV(writer, event, dateFormatter, timeFormatter);
+      }
+
+      // Write all recurrent events
+      for (RecurrentEvent recurrentEvent : recurrentEvents) {
+        for (Event event : recurrentEvent.getEvents()) {
+          writeEventToCSV(writer, event, dateFormatter, timeFormatter);
+        }
+      }
+    }
+  }
+
+  /**
+   * Helper method to write a single event to the CSV file.
+   *
+   * @param writer the FileWriter to write to
+   * @param event the event to write
+   * @param dateFormatter the formatter for dates
+   * @param timeFormatter the formatter for times
+   * @throws IOException if an I/O error occurs while writing
+   */
+  private void writeEventToCSV(FileWriter writer, Event event,
+                                DateTimeFormatter dateFormatter,
+                                DateTimeFormatter timeFormatter) throws IOException {
+    // Subject (required) - escape if contains commas
+    String subject = escapeCSVField(event.getSubject());
+    writer.append(subject).append(",");
+
+    // Start Date (required)
+    LocalDate startDate = LocalDate.parse(event.getStartDate());
+    writer.append(startDate.format(dateFormatter)).append(",");
+
+    // Start Time (optional)
+    if (event.getStartTime() != null) {
+      LocalTime startTime = LocalTime.parse(event.getStartTime());
+      writer.append(startTime.format(timeFormatter)).append(",");
+    } else {
+      writer.append(",");
+    }
+
+    // End Date (required)
+    LocalDate endDate = LocalDate.parse(event.getEndDate());
+    writer.append(endDate.format(dateFormatter)).append(",");
+
+    // End Time (optional)
+    if (event.getEndTime() != null) {
+      LocalTime endTime = LocalTime.parse(event.getEndTime());
+      writer.append(endTime.format(timeFormatter)).append(",");
+    } else {
+      writer.append(",");
+    }
+
+    // All Day Event
+    boolean isAllDayEvent = event.getStartTime() == null;
+    writer.append(isAllDayEvent ? "True" : "False").append(",");
+
+    // Description (optional) - escape if contains commas
+    String description = event.getDescription() != null ?
+        escapeCSVField(event.getDescription()) : "";
+    writer.append(description).append(",");
+
+    // Location (optional) - escape if contains commas
+    String location = event.getLocation() != null ?
+        escapeCSVField(event.getLocation()) : "";
+    writer.append(location).append(",");
+
+    // Private (opposite of isPublic)
+    Boolean isPublic = event.getPublic();
+    String privateValue = (isPublic != null && !isPublic) ? "True" : "False";
+    writer.append(privateValue);
+
+    // New line
+    writer.append("\n");
+  }
+
+  /**
+   * Escapes a CSV field by wrapping it in quotes if it contains commas, quotes, or newlines.
+   *
+   * @param field the field to escape
+   * @return the escaped field
+   */
+  private String escapeCSVField(String field) {
+    if (field == null) {
+      return "";
+    }
+
+    // If field contains comma, quote, or newline, wrap in quotes and escape internal quotes
+    if (field.contains(",") || field.contains("\"") || field.contains("\n")) {
+      return "\"" + field.replace("\"", "\"\"") + "\"";
+    }
+
+    return field;
   }
 
 }
