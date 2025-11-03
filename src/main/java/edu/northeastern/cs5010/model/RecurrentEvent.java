@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * RecurrentEvent class creates a recurrentEvent object. This object has a List of Events.
@@ -15,6 +16,9 @@ import java.util.Map;
  */
 
 public class RecurrentEvent{
+
+  // unique identifier for the recurrent event series
+  private final String id;
 
   private RecurrencePattern pattern;
   private LocalDate startDate;
@@ -36,6 +40,7 @@ public class RecurrentEvent{
 
   public RecurrentEvent(RecurrencePattern pattern, LocalDate startDate, LocalTime startTime,
       LocalTime endTime, String subject, Boolean isPublic, String description, String location) {
+    this.id = UUID.randomUUID().toString();
     this.pattern = pattern;
 
     this.events = generateFutureEvents(pattern, startDate, startTime, endTime, subject, isPublic, description, location);
@@ -144,6 +149,10 @@ public class RecurrentEvent{
       }
     }
     return events;
+  }
+
+  public String getId() {
+    return id;
   }
 
   public RecurrencePattern getPattern() {

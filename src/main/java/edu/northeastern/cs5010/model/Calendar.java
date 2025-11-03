@@ -349,7 +349,6 @@ public class Calendar {
 
   /**
    * Edit an existing event in the calendar. Only non-null parameters will be updated.
-   * Pass null for any field you don't want to change.
    *
    * @param eventId the unique ID of the event to edit
    * @param newSubject the new subject, or null to keep current
@@ -363,7 +362,7 @@ public class Calendar {
    * @throws IllegalArgumentException if:
    *     - The event with the given ID doesn't exist
    *     - The new end date/time is before or equal to the new start date/time
-   *     - The updated event conflicts with another event (when allowConflictEvents is false)
+   *     - The updated event conflicts with another event
    */
   public void editEvent(String eventId, String newSubject, String newStartDate, String newEndDate,
                         String newStartTime, String newEndTime, Boolean newIsPublic,
@@ -474,4 +473,145 @@ public class Calendar {
     event.setDescription(finalDescription);
     event.setLocation(finalLocation);
   }
+
+  /**
+   * Edit all instances in a recurring event series. Only non-null parameters will be updated.
+   *
+   * @param recurrentEventId the unique ID of the recurrent event series to edit
+   * @param newSubject the new subject for all instances, or null to keep current
+   * @param newStartTime the new start time for all instances (format: "HH:mm:ss"), or null to keep current
+   * @param newEndTime the new end time for all instances (format: "HH:mm:ss"), or null to keep current
+   * @param newIsPublic the new visibility setting for all instances, or null to keep current
+   * @param newDescription the new description for all instances, or null to keep current
+   * @param newLocation the new location for all instances, or null to keep current
+   * @throws IllegalArgumentException if:
+   *     - The recurrent event with the given ID doesn't exist
+   *     - The new end time is before or equal to the new start time
+   *     - Any updated instance would conflict with another event
+   */
+  public void editRecurrentEvent(String recurrentEventId, String newSubject, String newStartTime,
+                                  String newEndTime, Boolean newIsPublic, String newDescription,
+                                  String newLocation) {
+    // Find the recurrent event
+    RecurrentEvent targetRecurrentEvent = null;
+    for (RecurrentEvent recurrentEvent : recurrentEvents) {
+      if (recurrentEvent.getId().equals(recurrentEventId)) {
+        targetRecurrentEvent = recurrentEvent;
+        break;
+      }
+    }
+
+    // Validate that the recurrent event exists
+    if (targetRecurrentEvent == null) {
+      throw new IllegalArgumentException("Recurrent event with ID " + recurrentEventId
+          + " not found in calendar");
+    }
+
+    List<Event> recurrentEvents = targetRecurrentEvent.getEvents();
+
+    // Validate that we have at least one instance
+    if (recurrentEvents.isEmpty()) {
+      throw new IllegalArgumentException("Recurrent event has no event instances");
+    }
+
+    // Get the first instance to determine current values
+    Event firstInstance = recurrentEvents.getFirst();
+
+    // Determine the final values (use new values if provided, otherwise keep old values)
+    String finalSubject = newSubject != null ? newSubject : firstInstance.getSubject();
+    String finalStartTime = newStartTime != null ? newStartTime : firstInstance.getStartTime();
+    String finalEndTime = newEndTime != null ? newEndTime : firstInstance.getEndTime();
+    Boolean finalIsPublic = newIsPublic != null ? newIsPublic : firstInstance.getPublic();
+    String finalDescription = newDescription != null ? newDescription : firstInstance.getDescription();
+    String finalLocation = newLocation != null ? newLocation : firstInstance.getLocation();
+
+    // Validate that both times are null or both are non-null (for the final state)
+    if ((finalStartTime == null && finalEndTime != null) ||
+        (finalStartTime != null && finalEndTime == null)) {
+      throw new IllegalArgumentException("Both start time and end time must be null, "
+          + "or both must be non-null");
+    }
+
+    // If times are provided, validate them
+    if (finalStartTime != null && finalEndTime != null) {
+      LocalTime startTime = LocalTime.parse(finalStartTime);
+      LocalTime endTime = LocalTime.parse(finalEndTime);
+
+      // For same-day events, validate times
+      if (endTime.isBefore(startTime) || endTime.equals(startTime)) {
+        throw new IllegalArgumentException("End time must be after start time");
+      }
+    }
+
+    // Check for conflicts if allowConflictEvents is false
+    if (!allowConflictEvents) {
+      // For each instance in the series, check if the updated version would conflict
+      for (Event instance : recurrentEvents) {
+        // Create a temporary event with the final values for this instance
+        Event.Builder tempBuilder = new Event.Builder(finalSubject,
+            instance.getStartDate(), instance.getEndDate());
+
+        if (finalStartTime != null && finalEndTime != null) {
+          tempBuilder.startTime(finalStartTime).endTime(finalEndTime);
+        }
+
+        if (finalIsPublic != null) {
+          tempBuilder.isPublic(finalIsPublic);
+        }
+        if (finalDescription != null) {
+          tempBuilder.description(finalDescription);
+        }
+        if (finalLocation != null) {
+          tempBuilder.location(finalLocation);
+        }
+
+        Event tempEvent = tempBuilder.build();
+
+        // Check against all events in eventList
+        for (Event existingEvent : eventList) {
+          if (isOverlapping(tempEvent, existingEvent) ||
+              isOverlapping(existingEvent, tempEvent)) {
+            throw new IllegalArgumentException("Updated recurrent event would conflict with "
+                + "existing event on " + instance.getStartDate());
+          }
+        }
+
+        // Check against all recurrent events (excluding instances from this same series)
+        for (RecurrentEvent recurrentEvent : this.recurrentEvents) {
+          for (Event recurrentEventInstance : recurrentEvent.getEvents()) {
+            // Skip instances from the same series
+            if (recurrentEvent == targetRecurrentEvent) {
+              continue;
+            }
+
+            if (isOverlapping(tempEvent, recurrentEventInstance) ||
+                isOverlapping(recurrentEventInstance, tempEvent)) {
+              throw new IllegalArgumentException("Updated recurrent event would conflict with "
+                  + "existing recurrent event on " + instance.getStartDate());
+            }
+          }
+        }
+      }
+    }
+
+    // All validations passed - update all instances in the series
+    for (Event re : recurrentEvents) {
+      re.setSubject(finalSubject);
+
+      if (finalStartTime != null && finalEndTime != null) {
+        re.setStartTime(LocalTime.parse(finalStartTime));
+        re.setEndTime(LocalTime.parse(finalEndTime));
+      } else {
+        re.setStartTime(null);
+        re.setEndTime(null);
+      }
+
+      re.setPublic(finalIsPublic);
+      re.setDescription(finalDescription);
+      re.setLocation(finalLocation);
+    }
+
+    System.out.println("All instances in recurrent event series edited successfully");
+  }
+
 }
