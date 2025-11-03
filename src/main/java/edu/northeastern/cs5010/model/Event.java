@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Represents an event with details such as subject, dates, times, visibility, description,
@@ -18,6 +19,9 @@ import java.util.Objects;
  */
 
 public class Event {
+
+  // unique identifier
+  private final String id;
 
   // required information
   private String subject;
@@ -41,6 +45,7 @@ public class Event {
       throw new IllegalArgumentException("You must not have only startTime or only endTime");
     }
 
+    this.id = UUID.randomUUID().toString();
     this.subject = builder.subject;
     this.startDate = builder.startDate;
     this.endDate = builder.endDate;
@@ -120,6 +125,10 @@ public class Event {
     public Event build() {
       return new Event(this);
     }
+  }
+
+  public String getId() {
+    return id;
   }
 
   public String getSubject() {
