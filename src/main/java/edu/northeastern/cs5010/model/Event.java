@@ -75,11 +75,11 @@ public class Event {
     private String location;
 
     /**
-     * A builder for creating {@link Event} instances.
-
-     * @param subject subject of the event
-     * @param startDate start date of the event
-     * @param endDate end date of the event
+     * Creates a new Builder for constructing {@link Event} instances.
+     *
+     * @param subject the subject of the event.
+     * @param startDate the start date in "yyyy-MM-dd" format.
+     * @param endDate the end date in "yyyy-MM-dd" format.
      */
     public Builder(String subject, String startDate, String endDate) {
       if (subject != null && !subject.trim().isEmpty()) {
@@ -101,10 +101,10 @@ public class Event {
     }
 
     /**
-     * Set the start time of the event.
-
-     * @param startTime the start time of the event.
-     * @return A builder of Event class
+     * Sets the start time of the event.
+     *
+     * @param startTime the start time in "HH:mm:ss" format.
+     * @return this Builder instance for method chaining.
      */
     public Builder startTime(String startTime) {
       if (CheckTimeFormat.useRegex(startTime)) {
@@ -116,10 +116,10 @@ public class Event {
     }
 
     /**
-     * Set the end time of the event.
-
-     * @param endTime the end time of the event.
-     * @return A builder of Event class
+     * Sets the end time of the event.
+     *
+     * @param endTime the end time in "HH:mm:ss" format.
+     * @return this Builder instance for method chaining.
      */
     public Builder endTime(String endTime) {
       if (CheckTimeFormat.useRegex(endTime)) {
@@ -131,10 +131,10 @@ public class Event {
     }
 
     /**
-     * Set the visibility of the event.
-
-     * @param isPublic the visibility of the event.
-     * @return A builder of Event class.
+     * Sets the visibility of the event.
+     *
+     * @param isPublic true if the event is public, false if private.
+     * @return this Builder instance for method chaining.
      */
     public Builder isPublic(Boolean isPublic) {
       this.isPublic = isPublic;
@@ -142,10 +142,10 @@ public class Event {
     }
 
     /**
-     * Set the description of the event.
-
-     * @param description the description of the event.
-     * @return A builder of Event class.
+     * Sets the description of the event.
+     *
+     * @param description the description text.
+     * @return this Builder instance for method chaining.
      */
     public Builder description(String description) {
       this.description = description;
@@ -153,10 +153,10 @@ public class Event {
     }
 
     /**
-     * Set the location of the event.
-
-     * @param location the location of the event.
-     * @return A builder of Event class.
+     * Sets the location of the event.
+     *
+     * @param location the location text.
+     * @return this Builder instance for method chaining.
      */
     public Builder location(String location) {
       this.location = location;
@@ -164,9 +164,9 @@ public class Event {
     }
 
     /**
-     * Create an event instance.
-
-     * @return an {@link Event} event instance.
+     * Builds and returns a new Event instance.
+     *
+     * @return the constructed {@link Event}.
      */
     public Event build() {
       return new Event(this);
@@ -174,153 +174,153 @@ public class Event {
   }
 
   /**
-   * Get the id of an event.
-
-   * @return the id of an event.
+   * Gets the unique ID of the event.
+   *
+   * @return the event's unique ID.
    */
   public String getId() {
     return id;
   }
 
   /**
-   * Get the subject of an event.
+   * Gets the subject of the event.
    *
-   * @return the subject of an event.
+   * @return the event's subject.
    */
   public String getSubject() {
     return subject;
   }
 
   /**
-   * Set the subject of an event.
-
-   * @param subject the subject of an event/
+   * Sets the subject of the event.
+   *
+   * @param subject the new subject.
    */
   public void setSubject(String subject) {
     this.subject = subject;
   }
 
   /**
-   * Get the start date of an event.
+   * Gets the start date of the event.
    *
-   * @return the start date of an event.
+   * @return the start date in "yyyy-MM-dd" format.
    */
   public String getStartDate() {
     return startDate.toString();
   }
 
   /**
-   * Set the start date of an event.
-
-   * @param startDate the start date of an event.
+   * Sets the start date of the event.
+   *
+   * @param startDate the new start date.
    */
   public void setStartDate(LocalDate startDate) {
     this.startDate = startDate;
   }
 
   /**
-   * Get the end date of an event.
-
-   * @return the end date of an event.
+   * Gets the end date of the event.
+   *
+   * @return the end date in "yyyy-MM-dd" format.
    */
   public String getEndDate() {
     return endDate.toString();
   }
 
   /**
-   * Set the end date of an event.
-
-   * @param endDate the end date of an event.
+   * Sets the end date of the event.
+   *
+   * @param endDate the new end date.
    */
   public void setEndDate(LocalDate endDate) {
     this.endDate = endDate;
   }
 
   /**
-   * Get the start time of an event.
+   * Gets the start time of the event.
    *
-   * @return the start time of an event.
+   * @return the start time in "HH:mm:ss" format, or null if not set.
    */
   public String getStartTime() {
     return startTime == null ? null : startTime.format(timeFormatter);
   }
 
   /**
-   * Set the start time of an event.
+   * Sets the start time of the event.
    *
-   * @param startTime the start time of an event.
+   * @param startTime the new start time.
    */
   public void setStartTime(LocalTime startTime) {
     this.startTime = startTime;
   }
 
   /**
-   * Get the end time of an event.
+   * Gets the end time of the event.
    *
-   * @return the end time of an event.
+   * @return the end time in "HH:mm:ss" format, or null if not set.
    */
   public String getEndTime() {
     return endTime == null ? null : endTime.format(timeFormatter);
   }
 
   /**
-   * Set the end time of an event.
+   * Sets the end time of the event.
    *
-   * @param endTime the end time of an event.
+   * @param endTime the new end time.
    */
   public void setEndTime(LocalTime endTime) {
     this.endTime = endTime;
   }
 
   /**
-   * Get the visibility of an event.
-
-   * @return the visibility of an event.
+   * Gets the visibility of the event.
+   *
+   * @return true if the event is public, false if private, or null if not set.
    */
   public Boolean getPublic() {
     return isPublic;
   }
 
   /**
-   * Set the visibility of an event.
-
-   * @param isPublic visibility of an event.
+   * Sets the visibility of the event.
+   *
+   * @param isPublic true if the event is public, false if private.
    */
   public void setPublic(Boolean isPublic) {
     this.isPublic = isPublic;
   }
 
   /**
-   * Get the description of an event.
+   * Gets the description of the event.
    *
-   * @return the description of an event.
+   * @return the event's description, or null if not set.
    */
   public String getDescription() {
     return description;
   }
 
   /**
-   * Set the description of an event.
-
-   * @param description the description of an event.
+   * Sets the description of the event.
+   *
+   * @param description the new description.
    */
   public void setDescription(String description) {
     this.description = description;
   }
 
   /**
-   * Get the location of an event.
-
-   * @return the location of an event.
+   * Gets the location of the event.
+   *
+   * @return the event's location, or null if not set.
    */
   public String getLocation() {
     return location;
   }
 
   /**
-   * Set the location of an event.
-
-   * @param location the location of an event.
+   * Sets the location of the event.
+   *
+   * @param location the new location.
    */
   public void setLocation(String location) {
     this.location = location;
