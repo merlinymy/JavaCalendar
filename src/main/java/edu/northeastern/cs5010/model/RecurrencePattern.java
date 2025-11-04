@@ -7,10 +7,9 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
- * Represents a pattern used to create a {@link RecurrentEvent}recurrent event.
- * There are two ways to create a pattern. You can provide a number represents the occurrence
- * times of an event. Or you can provide a date represents the date
- * that this recurrent event will end. You have to provide the days this recurrent event is on.
+ * Defines a recurrence pattern for creating recurring events.
+ * A pattern specifies which days events occur and when the recurrence ends, either after
+ * a certain number of occurrences or on a specific date.
  */
 public class RecurrencePattern {
   private Integer recurrenceNumToEnd;
@@ -23,10 +22,10 @@ public class RecurrencePattern {
   }
 
   /**
-   * Create a recurrence pattern from num of occurrence and days when an event happens.
+   * Creates a recurrence pattern that ends after a specified number of occurrences.
    *
-   * @param recurrenceNum the occurrence count of the event before it ends.
-   * @param days the days when the event happens.
+   * @param recurrenceNum the number of occurrences before the recurrence ends.
+   * @param days the days of the week when events occur (e.g., "MONDAY", "FRIDAY").
    */
   public RecurrencePattern(Integer recurrenceNum, List<String> days) {
     validateDaysAndAssignDays(days);
@@ -34,11 +33,10 @@ public class RecurrencePattern {
   }
 
   /**
-   * Create a recurrence pattern from the end date of a recurrence event and days when
-   * an event happens.
+   * Creates a recurrence pattern that ends on a specified date.
    *
-   * @param dateTimeToEnd the end date of a recurrence event.
-   * @param days the days when the event happens.
+   * @param dateTimeToEnd the end date in "yyyy-MM-dd" format.
+   * @param days the days of the week when events occur (e.g., "MONDAY", "FRIDAY").
    */
   public RecurrencePattern(String dateTimeToEnd, List<String> days) {
     validateDaysAndAssignDays(days);
@@ -80,18 +78,18 @@ public class RecurrencePattern {
   }
 
   /**
-   * Get the occurrence count of the event before it ends.
+   * Gets the number of occurrences before the recurrence ends.
    *
-   * @return the occurrence count of the event before it ends.
+   * @return the occurrence count, or null if an end date is specified instead.
    */
   public Integer getRecurrenceNumToEnd() {
     return recurrenceNumToEnd;
   }
 
   /**
-   * Get the end date of the recurrent event.
+   * Gets the end date of the recurrence.
    *
-   * @return the end date of the recurrent event.
+   * @return the end date in "yyyy-MM-dd" format, or null if an occurrence count is specified instead.
    */
   public String getDateTimeToEnd() {
     if (dateTimeToEnd == null) {
@@ -101,9 +99,9 @@ public class RecurrencePattern {
   }
 
   /**
-   * Get the days of when a recurrent event happens.
+   * Gets the days of the week when events occur.
    *
-   * @return a list of the days of when a recurrent event happens.
+   * @return a list of day names (e.g., "MONDAY", "FRIDAY").
    */
   public List<String> getDays() {
     return days;
