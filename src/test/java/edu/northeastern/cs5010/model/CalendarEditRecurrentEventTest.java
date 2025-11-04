@@ -334,4 +334,284 @@ class CalendarEditRecurrentEventTest {
       assertEquals("Updated location", instance.getLocation());
     }
   }
+
+  @Test
+  void testEditRecurrentEventSeriesWithNoInstances() {
+    // Create a recurrent event
+    List<String> days = List.of("MONDAY");
+    RecurrencePattern pattern = new RecurrencePattern(2, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Meeting",
+        true,
+        "Description",
+        "Location"
+    );
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    String recurrentEventId = recurrentEvent.getId();
+
+    // Manually clear all instances to simulate an empty recurrent event
+    // This tests the validation at Calendar.java:555-557
+    recurrentEvent.getEvents().clear();
+
+    // Try to edit the recurrent event with no instances - should throw exception
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editRecurrentEvent(recurrentEventId, "Updated Meeting", null, null, null, null, null);
+    });
+  }
+
+  @Test
+  void testEditRecurrentEventSeriesMismatchedTimeNullability_OnlyEndTimeProvided() {
+    // Create timed recurrent events, convert to all-day, then try to add only end time
+    List<String> days = List.of("MONDAY");
+    RecurrencePattern pattern = new RecurrencePattern(2, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Meeting",
+        true,
+        "Description",
+        "Location"
+    );
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    String recurrentEventId = recurrentEvent.getId();
+
+    // First, manually set all instances to have null times (simulating all-day events)
+    for (Event instance : recurrentEvent.getEvents()) {
+      instance.setStartTime(null);
+      instance.setEndTime(null);
+    }
+
+    // Now try to add only end time (start time remains null) - should throw exception
+    // This tests the validation at Calendar.java:572-576
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editRecurrentEvent(recurrentEventId, null, null, "10:00:00", null, null, null);
+    });
+  }
+
+  @Test
+  void testEditRecurrentEventSeriesMismatchedTimeNullability_OnlyStartTimeProvided() {
+    // Create timed recurrent events, convert to all-day, then try to add only start time
+    List<String> days = List.of("TUESDAY");
+    RecurrencePattern pattern = new RecurrencePattern(2, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-04"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Meeting",
+        true,
+        "Description",
+        "Location"
+    );
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    String recurrentEventId = recurrentEvent.getId();
+
+    // First, manually set all instances to have null times (simulating all-day events)
+    for (Event instance : recurrentEvent.getEvents()) {
+      instance.setStartTime(null);
+      instance.setEndTime(null);
+    }
+
+    // Now try to add only start time (end time remains null) - should throw exception
+    // This tests the validation at Calendar.java:572-576
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editRecurrentEvent(recurrentEventId, null, "09:00:00", null, null, null, null);
+    });
+  }
+
+  @Test
+  void testEditRecurrentEventSeriesKeepAllDayTimes() {
+    // First, create a timed recurrent event and convert it to all-day
+    List<String> days = List.of("FRIDAY");
+    RecurrencePattern pattern = new RecurrencePattern(2, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-07"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Meeting",
+        true,
+        "Description",
+        "Location"
+    );
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    String recurrentEventId = recurrentEvent.getId();
+
+    // First, manually set all instances to have null times (simulating conversion to all-day)
+    for (Event instance : recurrentEvent.getEvents()) {
+      instance.setStartTime(null);
+      instance.setEndTime(null);
+    }
+
+    // Now edit other properties without providing times
+    // This tests the else branch at Calendar.java:648-650
+    calendar.editRecurrentEvent(recurrentEventId, "Updated Meeting", null, null, null, null, null);
+
+    // Verify all instances still have null times and updated subject
+    for (Event instance : recurrentEvent.getEvents()) {
+      assertNull(instance.getStartTime());
+      assertNull(instance.getEndTime());
+      assertEquals("Updated Meeting", instance.getSubject());
+    }
+  }
+
+  @Test
+  void testEditRecurrentEventSeriesConflictWithSingleEvent() {
+    calendar.setAllowConflict(false);
+
+    // Add a single event
+    Event singleEvent = new Event.Builder("Important Meeting", "2025-11-03", "2025-11-03")
+        .startTime("14:00:00")
+        .endTime("15:00:00")
+        .build();
+    calendar.addEvent(singleEvent);
+
+    // Add a recurrent event at different times
+    List<String> days = List.of("MONDAY");
+    RecurrencePattern pattern = new RecurrencePattern(2, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Recurring Meeting",
+        true,
+        "Weekly meeting",
+        "Room A"
+    );
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    String recurrentEventId = recurrentEvent.getId();
+    // Try to edit recurrent event to conflict with single event - should be caught by conflict check
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editRecurrentEvent(recurrentEventId, null, "14:00:00", "15:00:00", null, null, null);
+    });
+  }
+
+  @Test
+  void testEditRecurrentEventSeriesConflictWithSingleEventReverseOverlap() {
+    calendar.setAllowConflict(false);
+
+    // Add a single event
+    Event singleEvent = new Event.Builder("Important Meeting", "2025-11-03", "2025-11-03")
+        .startTime("14:00:00")
+        .endTime("15:00:00")
+        .build();
+    calendar.addEvent(singleEvent);
+
+    // Add a recurrent event at different times
+    List<String> days = List.of("MONDAY");
+    RecurrencePattern pattern = new RecurrencePattern(2, days);
+    RecurrentEvent recurrentEvent = new RecurrentEvent(
+        pattern,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Recurring Meeting",
+        true,
+        "Weekly meeting",
+        "Room A"
+    );
+    calendar.addRecurrentEvent(recurrentEvent);
+
+    String recurrentEventId = recurrentEvent.getId();
+    // Edit recurrent event to completely contain the single event's time range
+    // This tests the second condition: isOverlapping(existingEvent, tempEvent)
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editRecurrentEvent(recurrentEventId, null, "13:00:00", "16:00:00", null, null, null);
+    });
+  }
+
+  @Test
+  void testEditRecurrentEventSeriesConflictWithOtherRecurrentSeries() {
+    calendar.setAllowConflict(false);
+
+    // Add first recurrent event series
+    List<String> days1 = List.of("MONDAY", "WEDNESDAY");
+    RecurrencePattern pattern1 = new RecurrencePattern(2, days1);
+    RecurrentEvent recurrentEvent1 = new RecurrentEvent(
+        pattern1,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Morning Meeting",
+        true,
+        "First series",
+        "Room A"
+    );
+    calendar.addRecurrentEvent(recurrentEvent1);
+
+    // Add second recurrent event series at different times
+    List<String> days2 = List.of("MONDAY");
+    RecurrencePattern pattern2 = new RecurrencePattern(2, days2);
+    RecurrentEvent recurrentEvent2 = new RecurrentEvent(
+        pattern2,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("14:00:00"),
+        LocalTime.parse("15:00:00"),
+        "Afternoon Meeting",
+        false,
+        "Second series",
+        "Room B"
+    );
+    calendar.addRecurrentEvent(recurrentEvent2);
+
+    String recurrentEvent2Id = recurrentEvent2.getId();
+    // Try to edit second series to conflict with first series - should be caught
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editRecurrentEvent(recurrentEvent2Id, null, "09:00:00", "10:00:00", null, null, null);
+    });
+  }
+
+  @Test
+  void testEditRecurrentEventSeriesConflictWithOtherRecurrentSeriesReverseOverlap() {
+    calendar.setAllowConflict(false);
+
+    // Add first recurrent event series
+    List<String> days1 = List.of("MONDAY");
+    RecurrencePattern pattern1 = new RecurrencePattern(2, days1);
+    RecurrentEvent recurrentEvent1 = new RecurrentEvent(
+        pattern1,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("09:00:00"),
+        LocalTime.parse("10:00:00"),
+        "Morning Meeting",
+        true,
+        "First series",
+        "Room A"
+    );
+    calendar.addRecurrentEvent(recurrentEvent1);
+
+    // Add second recurrent event series at different times
+    List<String> days2 = List.of("MONDAY");
+    RecurrencePattern pattern2 = new RecurrencePattern(2, days2);
+    RecurrentEvent recurrentEvent2 = new RecurrentEvent(
+        pattern2,
+        LocalDate.parse("2025-11-03"),
+        LocalTime.parse("14:00:00"),
+        LocalTime.parse("15:00:00"),
+        "Afternoon Meeting",
+        false,
+        "Second series",
+        "Room B"
+    );
+    calendar.addRecurrentEvent(recurrentEvent2);
+
+    String recurrentEvent2Id = recurrentEvent2.getId();
+    // Edit second series to completely contain first series's time range
+    // This tests the second condition: isOverlapping(recurrentEventInstance, tempEvent)
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editRecurrentEvent(recurrentEvent2Id, null, "08:00:00", "11:00:00", null, null, null);
+    });
+  }
 }

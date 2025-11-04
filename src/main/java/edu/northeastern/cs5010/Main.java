@@ -90,7 +90,7 @@ public class Main {
       // Export to CSV
       String csvFilePath = "my_calendar_export.csv";
       System.out.println("\n=== Exporting calendar to CSV ===");
-      myCalendar.exportToCSV(csvFilePath);
+      myCalendar.exportToCsv(csvFilePath);
       System.out.println("Calendar exported successfully to: " + csvFilePath);
 
       // Print summary

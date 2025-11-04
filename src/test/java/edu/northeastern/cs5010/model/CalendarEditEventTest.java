@@ -334,4 +334,101 @@ class CalendarEditEventTest {
     assertEquals("2025-11-01", event.getStartDate());
     assertEquals("2025-11-03", event.getEndDate());
   }
+
+  @Test
+  void testEditEventMismatchedTimeNullability_OnlyStartTimeNull() {
+    // Start with an all-day event (no times)
+    Event event = new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
+        .build();
+    calendar.addEvent(event);
+
+    String eventId = event.getId();
+    // Try to add only end time (start time remains null) - should throw exception
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editEvent(eventId, null, null, null, null, "10:00:00", null, null, null);
+    });
+  }
+
+  @Test
+  void testEditEventMismatchedTimeNullability_OnlyEndTimeNull() {
+    // Start with an all-day event (no times)
+    Event event = new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
+        .build();
+    calendar.addEvent(event);
+
+    String eventId = event.getId();
+    // Try to add only start time (end time remains null) - should throw exception
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editEvent(eventId, null, null, null, "09:00:00", null, null, null, null);
+    });
+  }
+
+  @Test
+  void testEditEventKeepAllDayEventTimes() {
+    // Start with an all-day event (no times)
+    Event event = new Event.Builder("Meeting", "2025-11-01", "2025-11-01")
+        .build();
+    calendar.addEvent(event);
+
+    String eventId = event.getId();
+    // Edit other properties but keep it as an all-day event (don't provide times)
+    // This tests the else branch at Calendar.java:510-511
+    calendar.editEvent(eventId, "Updated Meeting", null, null, null, null, null, null, null);
+
+    // Verify it's still an all-day event
+    assertNull(event.getStartTime());
+    assertNull(event.getEndTime());
+    assertEquals("Updated Meeting", event.getSubject());
+  }
+
+  @Test
+  void testEditEventConflictDetectionNotAllowed() {
+    calendar.setAllowConflict(false);
+
+    // Add two events with no conflict
+    Event event1 = new Event.Builder("Meeting 1", "2025-11-01", "2025-11-01")
+        .startTime("09:00:00")
+        .endTime("10:00:00")
+        .build();
+
+    Event event2 = new Event.Builder("Meeting 2", "2025-11-01", "2025-11-01")
+        .startTime("11:00:00")
+        .endTime("12:00:00")
+        .build();
+
+    calendar.addEvent(event1);
+    calendar.addEvent(event2);
+
+    String event2Id = event2.getId();
+    // Try to edit event2 to overlap with event1 - this should be caught by conflict detection
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editEvent(event2Id, null, null, null, "09:15:00", "10:15:00", null, null, null);
+    });
+  }
+
+  @Test
+  void testEditEventConflictDetectionReverseOverlap() {
+    calendar.setAllowConflict(false);
+
+    // Add two events with no conflict
+    Event event1 = new Event.Builder("Meeting 1", "2025-11-01", "2025-11-01")
+        .startTime("09:00:00")
+        .endTime("10:00:00")
+        .build();
+
+    Event event2 = new Event.Builder("Meeting 2", "2025-11-01", "2025-11-01")
+        .startTime("11:00:00")
+        .endTime("12:00:00")
+        .build();
+
+    calendar.addEvent(event1);
+    calendar.addEvent(event2);
+
+    String event2Id = event2.getId();
+    // Edit event2 to completely contain event1's time range
+    // This tests the second condition: isOverlapping(existingEvent, tempEvent)
+    assertThrows(IllegalArgumentException.class, () -> {
+      calendar.editEvent(event2Id, null, null, null, "08:00:00", "11:00:00", null, null, null);
+    });
+  }
 }

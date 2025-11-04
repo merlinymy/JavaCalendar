@@ -43,7 +43,7 @@ class CalendarExportCSVTest {
 
   @Test
   void testExportEmptyCalendar() throws IOException {
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     assertEquals(1, lines.size()); // Only header
@@ -59,7 +59,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     assertEquals(2, lines.size()); // Header + 1 event
@@ -81,7 +81,7 @@ class CalendarExportCSVTest {
     calendar.addEvent(event1);
     calendar.addEvent(event2);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     assertEquals(3, lines.size()); // Header + 2 events
@@ -95,7 +95,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -110,7 +110,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -128,7 +128,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -144,7 +144,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -163,7 +163,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -187,7 +187,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -203,7 +203,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -218,7 +218,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -235,7 +235,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -251,7 +251,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -268,7 +268,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     // The event line should contain the description wrapped in quotes
@@ -296,7 +296,7 @@ class CalendarExportCSVTest {
     );
 
     calendar.addRecurrentEvent(recurrentEvent);
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     // Should have header + 3 occurrences (Jan 1, Jan 8, Jan 15 are all Wednesdays)
@@ -331,7 +331,7 @@ class CalendarExportCSVTest {
     );
 
     calendar.addRecurrentEvent(recurrentEvent);
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     // Should have header + 1 regular event + 2 recurrent events
@@ -350,7 +350,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -366,7 +366,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -382,7 +382,7 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
@@ -398,12 +398,66 @@ class CalendarExportCSVTest {
         .build();
     calendar.addEvent(event);
 
-    calendar.exportToCSV(testFilePath);
+    calendar.exportToCsv(testFilePath);
 
     List<String> lines = readCSVFile();
     String eventLine = lines.get(1);
     assertTrue(eventLine.contains("12:00 AM"));
     assertTrue(eventLine.contains("1:00 AM"));
+  }
+
+  @Test
+  void testExportEventWithNullSubject() throws IOException {
+    Event event = new Event.Builder("Meeting", "2025-05-30", "2025-05-30")
+        .startTime("10:00:00")
+        .endTime("11:00:00")
+        .build();
+
+    // Manually set subject to null after creation to test escapeCsvField(null)
+    // This tests the null check at Calendar.java:744-746
+    event.setSubject(null);
+
+    calendar.addEvent(event);
+    calendar.exportToCsv(testFilePath);
+
+    List<String> lines = readCSVFile();
+    String eventLine = lines.get(1);
+    // The subject field should be empty (not "null")
+    assertTrue(eventLine.startsWith(","), "Null subject should result in empty CSV field");
+  }
+
+  @Test
+  void testExportEventWithNullDescription() throws IOException {
+    Event event = new Event.Builder("Meeting", "2025-05-30", "2025-05-30")
+        .startTime("10:00:00")
+        .endTime("11:00:00")
+        .build(); // No description set, so it will be null
+    calendar.addEvent(event);
+
+    calendar.exportToCsv(testFilePath);
+
+    List<String> lines = readCSVFile();
+    String eventLine = lines.get(1);
+    // The description field should be empty (not "null")
+    assertTrue(eventLine.contains(",,"), "Null description should result in empty CSV field");
+  }
+
+  @Test
+  void testExportEventWithNullLocation() throws IOException {
+    Event event = new Event.Builder("Meeting", "2025-05-30", "2025-05-30")
+        .startTime("10:00:00")
+        .endTime("11:00:00")
+        .build(); // No location set, so it will be null
+    calendar.addEvent(event);
+
+    calendar.exportToCsv(testFilePath);
+
+    List<String> lines = readCSVFile();
+    String eventLine = lines.get(1);
+    // The location field should be empty (not "null")
+    String[] fields = eventLine.split(",");
+    // Location is the second to last field (before Private)
+    assertEquals("", fields[fields.length - 2], "Null location should result in empty CSV field");
   }
 
   // ==================== Helper Methods ====================
