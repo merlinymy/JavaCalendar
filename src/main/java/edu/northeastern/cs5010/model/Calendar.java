@@ -33,8 +33,8 @@ public class Calendar {
   }
 
   /**
-   * Retrieve an event given its unique ID.
-
+   * Retrieves an event by its unique ID.
+   *
    * @param id the unique ID of the event.
    * @return the {@link Event} with the given ID, or null if not found.
    */
@@ -59,12 +59,12 @@ public class Calendar {
   }
 
   /**
-   * Retrieve an event given its subject, start date, and start time.
+   * Retrieves an event by its subject, start date, and start time.
    *
-   * @param subject the subject of an event.
-   * @param startDate the startDate of an event. Must be in the format of "yyyy-MM-dd".
-   * @param startTime the startTime of an event. Must be in the format of "HH:mm:ss".
-   * @return the first {@link Event} event object with given params.
+   * @param subject the subject of the event.
+   * @param startDate the start date of the event in "yyyy-MM-dd" format.
+   * @param startTime the start time of the event in "HH:mm:ss" format.
+   * @return the first {@link Event} matching the given parameters, or null if not found.
    */
   public Event getOneEvent(String subject, String startDate, String startTime) {
     Event res;
@@ -92,11 +92,11 @@ public class Calendar {
   }
 
   /**
-   * Retrieve all events between a startDate and an endDate.
-
-   * @param startDate the startDate of a date range.
-   * @param endDate the endDate of a date range.
-   * @return a list of {@link Event} events that are between the startDate and the endDate.
+   * Retrieves all events within the specified date range.
+   *
+   * @param startDate the start date of the range in "yyyy-MM-dd" format.
+   * @param endDate the end date of the range in "yyyy-MM-dd" format.
+   * @return a list of {@link Event} objects that occur within the date range.
    */
   public List<Event> getAllEventsInRange(String startDate, String endDate) {
     List<Event> res = new ArrayList<>();
@@ -121,11 +121,11 @@ public class Calendar {
   }
 
   /**
-   * Check if an event exists on the provided date and at the provided time.
-
-   * @param date a date used to perform the check.
-   * @param time a time used to perform the check
-   * @return true if an event exists, false if an event doesn't exist.
+   * Checks if an event exists at the specified date and time.
+   *
+   * @param date the date to check in "yyyy-MM-dd" format.
+   * @param time the time to check in "HH:mm:ss" format.
+   * @return true if an event exists at that date and time, false otherwise.
    */
   public boolean isUserBusyOnDayAtTime(String date, String time) {
     LocalDate targetDate = LocalDate.parse(date);
@@ -180,11 +180,11 @@ public class Calendar {
   }
 
   /**
-   * Add a non-recurrent event to the calendar. Performs conflict check before adding.
-
-   * @param newEvent an event {@link Event} to be added.
-   * @throws IllegalArgumentException if conflict events exist in the calendar.
+   * Adds a non-recurrent event to the calendar.
    *
+   * @param newEvent the {@link Event} to be added.
+   * @throws IllegalArgumentException if the event already exists or conflicts with an existing
+   *     event when conflict checking is enabled.
    */
   public void addEvent(Event newEvent) {
 
@@ -218,11 +218,11 @@ public class Calendar {
   }
 
   /**
-   * Add a recurrent event to the calendar. Performs conflict check before adding.
-
-   * @param newRecurrentEvent a recurrent event {@link RecurrentEvent} to be added
-   * @throws IllegalArgumentException if the recurrent event already exists, or if any of its
-   *     generated events would conflict with existing events when allowConflictEvents is false
+   * Adds a recurrent event to the calendar.
+   *
+   * @param newRecurrentEvent the {@link RecurrentEvent} to be added.
+   * @throws IllegalArgumentException if the recurrent event already exists or if any of its
+   *     instances conflict with existing events when conflict checking is enabled.
    */
   public void addRecurrentEvent(RecurrentEvent newRecurrentEvent) {
     // Check if this exact recurrent event already exists
@@ -304,55 +304,54 @@ public class Calendar {
   }
 
   /**
-   * Returns the name of the calendar.
-
-   * @return The name of the calendar as a string.
+   * Gets the title of the calendar.
+   *
+   * @return the title of the calendar.
    */
   public String getTitle() {
     return title;
   }
 
   /**
-   * Returns the calendar's event list.
-
-   * @return All the non-recurrent events in the calendar as a list.
+   * Gets the list of non-recurrent events in the calendar.
+   *
+   * @return the list of non-recurrent events.
    */
   public List<Event> getEventList() {
     return eventList;
   }
 
   /**
-   * Returns the calendar's recurrent event list.
-
-   * @return All the recurrent events in the calendar as a list.
+   * Gets the list of recurrent events in the calendar.
+   *
+   * @return the list of recurrent events.
    */
   public List<RecurrentEvent> getRecurrentEvents() {
     return recurrentEvents;
   }
 
   /**
-   * Set the name of the calendar.
-
-   * @param title The new name of the calendar.
+   * Sets the title of the calendar.
+   *
+   * @param title the new title.
    */
   public void setTitle(String title) {
     this.title = title;
   }
 
   /**
-   * Returns true if event conflicts are allowed. Returns false otherwise.
-
-   * @return the state of the calendar's conflict setting as a boolean.
+   * Checks if event conflicts are allowed in the calendar.
+   *
+   * @return true if conflicts are allowed, false otherwise.
    */
   public Boolean getAllowConflict() {
     return allowConflictEvents;
   }
 
   /**
-   * Change the calendar's event conflict setting. Set to ture if events are allowed to have
-   * conflicts. Set to false otherwise.
-
-   * @param b True or false
+   * Sets whether event conflicts are allowed in the calendar.
+   *
+   * @param b true to allow conflicts, false to disallow.
    */
   public void setAllowConflict(Boolean b) {
     this.allowConflictEvents = b;
@@ -392,21 +391,19 @@ public class Calendar {
   }
 
   /**
-   * Edit an existing event in the calendar. Only non-null parameters will be updated.
+   * Edits an existing event in the calendar.
    *
-   * @param eventId the unique ID of the event to edit
-   * @param newSubject the new subject, or null to keep current
-   * @param newStartDate the new start date (format: "yyyy-MM-dd"), or null to keep current
-   * @param newEndDate the new end date (format: "yyyy-MM-dd"), or null to keep current
-   * @param newStartTime the new start time (format: "HH:mm:ss"), or null to keep current
-   * @param newEndTime the new end time (format: "HH:mm:ss"), or null to keep current
-   * @param newIsPublic the new visibility setting, or null to keep current
-   * @param newDescription the new description, or null to keep current
-   * @param newLocation the new location, or null to keep current
-   * @throws IllegalArgumentException if:
-   *     - The event with the given ID doesn't exist
-   *     - The new end date/time is before or equal to the new start date/time
-   *     - The updated event conflicts with another event
+   * @param eventId the unique ID of the event to edit.
+   * @param newSubject the new subject, or null to keep current.
+   * @param newStartDate the new start date in "yyyy-MM-dd" format, or null to keep current.
+   * @param newEndDate the new end date in "yyyy-MM-dd" format, or null to keep current.
+   * @param newStartTime the new start time in "HH:mm:ss" format, or null to keep current.
+   * @param newEndTime the new end time in "HH:mm:ss" format, or null to keep current.
+   * @param newIsPublic the new visibility setting, or null to keep current.
+   * @param newDescription the new description, or null to keep current.
+   * @param newLocation the new location, or null to keep current.
+   * @throws IllegalArgumentException if the event doesn't exist, end date/time is invalid,
+   *     or the updated event conflicts with another event when conflict checking is enabled.
    */
   public void editEvent(String eventId, String newSubject, String newStartDate, String newEndDate,
                         String newStartTime, String newEndTime, Boolean newIsPublic,
@@ -520,21 +517,19 @@ public class Calendar {
   }
 
   /**
-   * Edit all instances in a recurring event series. Only non-null parameters will be updated.
+   * Edits all instances in a recurring event series.
    *
-   * @param recurrentEventId the unique ID of the recurrent event series to edit
-   * @param newSubject the new subject for all instances, or null to keep current
-   * @param newStartTime the new start time for all instances (format: "HH:mm:ss"),
-   *                     or null to keep current
-   * @param newEndTime the new end time for all instances (format: "HH:mm:ss"),
-   *                   or null to keep current
-   * @param newIsPublic the new visibility setting for all instances, or null to keep current
-   * @param newDescription the new description for all instances, or null to keep current
-   * @param newLocation the new location for all instances, or null to keep current
-   * @throws IllegalArgumentException if:
-   *     - The recurrent event with the given ID doesn't exist
-   *     - The new end time is before or equal to the new start time
-   *     - Any updated instance would conflict with another event
+   * @param recurrentEventId the unique ID of the recurrent event series to edit.
+   * @param newSubject the new subject for all instances, or null to keep current.
+   * @param newStartTime the new start time for all instances in "HH:mm:ss" format,
+   *                     or null to keep current.
+   * @param newEndTime the new end time for all instances in "HH:mm:ss" format,
+   *                   or null to keep current.
+   * @param newIsPublic the new visibility setting for all instances, or null to keep current.
+   * @param newDescription the new description for all instances, or null to keep current.
+   * @param newLocation the new location for all instances, or null to keep current.
+   * @throws IllegalArgumentException if the recurrent event doesn't exist, end time is invalid,
+   *     or any updated instance conflicts with another event when conflict checking is enabled.
    */
   public void editRecurrentEvent(String recurrentEventId, String newSubject, String newStartTime,
                                   String newEndTime, Boolean newIsPublic, String newDescription,
@@ -664,10 +659,9 @@ public class Calendar {
 
   /**
    * Exports the calendar to a CSV file in Google Calendar format.
-   * The CSV file will include all events from both the eventList and recurrentEvents.
    *
-   * @param filePath the path where the CSV file should be saved
-   * @throws IOException if an I/O error occurs while writing the file
+   * @param filePath the path where the CSV file should be saved.
+   * @throws IOException if an I/O error occurs while writing the file.
    */
   public void exportToCsv(String filePath) throws IOException {
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -692,15 +686,6 @@ public class Calendar {
     }
   }
 
-  /**
-   * Helper method to write a single event to the CSV file.
-   *
-   * @param writer the FileWriter to write to
-   * @param event the event to write
-   * @param dateFormatter the formatter for dates
-   * @param timeFormatter the formatter for times
-   * @throws IOException if an I/O error occurs while writing
-   */
   private void writeEventToCsv(FileWriter writer, Event event,
                                 DateTimeFormatter dateFormatter,
                                 DateTimeFormatter timeFormatter) throws IOException {
@@ -755,12 +740,6 @@ public class Calendar {
     writer.append("\n");
   }
 
-  /**
-   * Escapes a CSV field by wrapping it in quotes if it contains commas, quotes, or newlines.
-   *
-   * @param field the field to escape
-   * @return the escaped field
-   */
   private String escapeCsvField(String field) {
     if (field == null) {
       return "";
