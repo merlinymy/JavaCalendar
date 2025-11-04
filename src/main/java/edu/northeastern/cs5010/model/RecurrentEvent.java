@@ -15,7 +15,7 @@ import java.util.UUID;
  *
  */
 
-public class RecurrentEvent{
+public class RecurrentEvent {
 
   // unique identifier for the recurrent event series
   private final String id;
@@ -27,15 +27,16 @@ public class RecurrentEvent{
   private List<Event> events = new ArrayList<>();
 
   /**
-   * Constructor of RecurrentEvent class
+   * Constructor of RecurrentEvent class.
+
    * @param pattern the recurrence {@link RecurrencePattern} used for this event
    * @param startDate the start date for this recurrentEvent
    * @param startTime the start time for this recurrentEvent
    * @param endTime the end time for this recurrentEvent
-   * @param subject
-   * @param isPublic
-   * @param description
-   * @param location
+   * @param subject the subject of the event.
+   * @param isPublic the visibility of the event
+   * @param description the description of the event
+   * @param location the location of the event
    */
 
   public RecurrentEvent(RecurrencePattern pattern, LocalDate startDate, LocalTime startTime,
@@ -43,7 +44,8 @@ public class RecurrentEvent{
     this.id = UUID.randomUUID().toString();
     this.pattern = pattern;
 
-    this.events = generateFutureEvents(pattern, startDate, startTime, endTime, subject, isPublic, description, location);
+    this.events = generateFutureEvents(pattern, startDate, startTime, endTime, subject,
+        isPublic, description, location);
     System.out.println(this.events);
   }
 
@@ -62,17 +64,17 @@ public class RecurrentEvent{
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     Map<String, Integer> dayRankingHelper = Map.of("MONDAY", 1,
-        "TUESDAY",2,
+        "TUESDAY", 2,
         "WEDNESDAY", 3,
-        "THURSDAY",4,
-        "FRIDAY",5,
-        "SATURDAY",6,
-        "SUNDAY",7);
+        "THURSDAY", 4,
+        "FRIDAY", 5,
+        "SATURDAY", 6,
+        "SUNDAY", 7);
 
     // invalid cases
-    if ((recurrenceToEnd != null && days.size() > recurrenceToEnd) ||
-        (dateTimeToEnd != null && dateTimeToEnd.isBefore(startDate))) {
-      System.out.println(recurrenceToEnd != null );
+    if ((recurrenceToEnd != null && days.size() > recurrenceToEnd)
+        || (dateTimeToEnd != null && dateTimeToEnd.isBefore(startDate))) {
+      System.out.println(recurrenceToEnd != null);
       throw new IllegalArgumentException("Invalid cases");
     }
 
@@ -127,15 +129,14 @@ public class RecurrentEvent{
 
         nextDay = days.get(daysPointer);
 
-        int daysDiff = ((dayRankingHelper.get(nextDay) - dayRankingHelper.get(currentDay) - 1 + 7) % 7) + 1;
+        int daysDiff = ((dayRankingHelper.get(nextDay) - dayRankingHelper.get(currentDay)
+            - 1 + 7) % 7) + 1;
 
         currentStartDate = currentStartDate.plusDays(daysDiff);
       }
-
-    }
-    else { // End condition is on a certain day
+    } else { // End condition is on a certain day
       while (!startDate.isAfter(dateTimeToEnd)) {
-        if (days.contains(startDate.getDayOfWeek().toString())){
+        if (days.contains(startDate.getDayOfWeek().toString())) {
           Event newEvent = new Event.Builder(subject, startDate.format(dateFormatter),
               startDate.format(dateFormatter)).description(description)
               .isPublic(isPublic)
@@ -151,23 +152,21 @@ public class RecurrentEvent{
     return events;
   }
 
+  /**
+   * Get the id of the recurrent event.
+   *
+   * @return the id of the recurrent event.
+   */
   public String getId() {
     return id;
   }
 
-  public RecurrencePattern getPattern() {
-    return pattern;
-  }
-
-  public void setPattern(RecurrencePattern pattern) {
-    this.pattern = pattern;
-  }
-
+  /**
+   * Get the recurrent event list.
+   *
+   * @return the recurrent event list.
+   */
   public List<Event> getEvents() {
     return events;
-  }
-
-  public void setEvents(List<Event> events) {
-    this.events = events;
   }
 }
