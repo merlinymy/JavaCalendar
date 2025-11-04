@@ -8,9 +8,12 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
+/**
+ * An object that represents a calendar. A calendar has a title, a list of non-recurrent events, and
+ * a list of recurrent events. A calendar has a setting to toggle if conflict events are allowed.
+ */
 public class Calendar {
 
   // TODO: use Map for events: key would be a combination of subject, and start date
@@ -31,6 +34,7 @@ public class Calendar {
 
   /**
    * Retrieve an event given its unique ID.
+
    * @param id the unique ID of the event.
    * @return the {@link Event} with the given ID, or null if not found.
    */
@@ -56,6 +60,7 @@ public class Calendar {
 
   /**
    * Retrieve an event given its subject, start date, and start time.
+   *
    * @param subject the subject of an event.
    * @param startDate the startDate of an event. Must be in the format of "yyyy-MM-dd".
    * @param startTime the startTime of an event. Must be in the format of "HH:mm:ss".
@@ -66,8 +71,8 @@ public class Calendar {
 
     // check if a valid event exists in eventList
     for (Event event : eventList) {
-      if (event.getSubject().equals(subject) && event.getStartDate().equals(startDate) &&
-          event.getStartTime().equals(startTime)) {
+      if (event.getSubject().equals(subject) && event.getStartDate().equals(startDate)
+          && event.getStartTime().equals(startTime)) {
         res = event;
         return res;
       }
@@ -76,8 +81,8 @@ public class Calendar {
     // check if a valid event exists in the recurrentEventList
     for (RecurrentEvent recurrentEvent : recurrentEvents) {
       for (Event event : recurrentEvent.getEvents()) {
-        if (event.getSubject().equals(subject) && event.getStartDate().equals(startDate) &&
-            event.getStartTime().equals(startTime)) {
+        if (event.getSubject().equals(subject) && event.getStartDate().equals(startDate)
+            && event.getStartTime().equals(startTime)) {
           res = event;
           return res;
         }
@@ -88,6 +93,7 @@ public class Calendar {
 
   /**
    * Retrieve all events between a startDate and an endDate.
+
    * @param startDate the startDate of a date range.
    * @param endDate the endDate of a date range.
    * @return a list of {@link Event} events that are between the startDate and the endDate.
@@ -116,6 +122,7 @@ public class Calendar {
 
   /**
    * Check if an event exists on the provided date and at the provided time.
+
    * @param date a date used to perform the check.
    * @param time a time used to perform the check
    * @return true if an event exists, false if an event doesn't exist.
@@ -149,7 +156,8 @@ public class Calendar {
     LocalDate eventStartDate = LocalDate.parse(event.getStartDate());
     LocalDate eventEndDate = LocalDate.parse(event.getEndDate());
 
-    boolean isDateInRange = (targetDate.isEqual(eventStartDate) || targetDate.isAfter(eventStartDate))
+    boolean isDateInRange = (targetDate.isEqual(eventStartDate)
+        || targetDate.isAfter(eventStartDate))
         && (targetDate.isEqual(eventEndDate) || targetDate.isBefore(eventEndDate));
 
     if (!isDateInRange) {
@@ -173,6 +181,7 @@ public class Calendar {
 
   /**
    * Add a non-recurrent event to the calendar. Performs conflict check before adding.
+
    * @param newEvent an event {@link Event} to be added.
    * @throws IllegalArgumentException if conflict events exist in the calendar.
    *
@@ -184,8 +193,8 @@ public class Calendar {
         throw new IllegalArgumentException("Same event exists in this calendar");
       }
 
-      if (allowConflictEvents == false &&
-          (isOverlapping(existingEvent, newEvent) || isOverlapping(newEvent, existingEvent))) {
+      if (allowConflictEvents == false
+          && (isOverlapping(existingEvent, newEvent) || isOverlapping(newEvent, existingEvent))) {
         throw new IllegalArgumentException("There is an overlapping event, you can turn on "
             + "allowConflictEvents in calendar setting");
       }
@@ -210,6 +219,7 @@ public class Calendar {
 
   /**
    * Add a recurrent event to the calendar. Performs conflict check before adding.
+
    * @param newRecurrentEvent a recurrent event {@link RecurrentEvent} to be added
    * @throws IllegalArgumentException if the recurrent event already exists, or if any of its
    *     generated events would conflict with existing events when allowConflictEvents is false
@@ -280,39 +290,70 @@ public class Calendar {
 
       LocalDateTime thisStartLocalDateTime = e1StartDate.atTime(e1StartTime);
       LocalDateTime thisEndLocalDateTime = e1EndDate.atTime(e1EndTime);
-      LocalDateTime eStartLocalDateTime = e2StartDate.atTime(e2StartTime);
-      LocalDateTime eEndLocalDateTime = e2EndDate.atTime(e2EndTime);
+      LocalDateTime eventStartLocalDateTime = e2StartDate.atTime(e2StartTime);
+      LocalDateTime eventEndLocalDateTime = e2EndDate.atTime(e2EndTime);
 
-      boolean e1StartsWithinE2 = thisStartLocalDateTime.isAfter(eStartLocalDateTime)
-          && thisStartLocalDateTime.isBefore(eEndLocalDateTime);
-      boolean e1EndsWithinE2 = thisEndLocalDateTime.isAfter(eStartLocalDateTime)
-          && thisEndLocalDateTime.isBefore(eEndLocalDateTime);
-      boolean sameStartTime = thisStartLocalDateTime.isEqual(eStartLocalDateTime);
+      boolean e1StartsWithinE2 = thisStartLocalDateTime.isAfter(eventStartLocalDateTime)
+          && thisStartLocalDateTime.isBefore(eventEndLocalDateTime);
+      boolean e1EndsWithinE2 = thisEndLocalDateTime.isAfter(eventStartLocalDateTime)
+          && thisEndLocalDateTime.isBefore(eventEndLocalDateTime);
+      boolean sameStartTime = thisStartLocalDateTime.isEqual(eventStartLocalDateTime);
 
       return e1StartsWithinE2 || e1EndsWithinE2 || sameStartTime;
     }
   }
 
+  /**
+   * Returns the name of the calendar.
+
+   * @return The name of the calendar as a string.
+   */
   public String getTitle() {
     return title;
   }
 
+  /**
+   * Returns the calendar's event list.
+
+   * @return All the non-recurrent events in the calendar as a list.
+   */
   public List<Event> getEventList() {
     return eventList;
   }
 
+  /**
+   * Returns the calendar's recurrent event list.
+
+   * @return All the recurrent events in the calendar as a list.
+   */
   public List<RecurrentEvent> getRecurrentEvents() {
     return recurrentEvents;
   }
 
+  /**
+   * Set the name of the calendar.
+
+   * @param title The new name of the calendar.
+   */
   public void setTitle(String title) {
     this.title = title;
   }
 
+  /**
+   * Returns true if event conflicts are allowed. Returns false otherwise.
+
+   * @return the state of the calendar's conflict setting as a boolean.
+   */
   public Boolean getAllowConflict() {
     return allowConflictEvents;
   }
 
+  /**
+   * Change the calendar's event conflict setting. Set to ture if events are allowed to have
+   * conflicts. Set to false otherwise.
+
+   * @param b True or false
+   */
   public void setAllowConflict(Boolean b) {
     this.allowConflictEvents = b;
   }
@@ -334,13 +375,13 @@ public class Calendar {
 
   @Override
   public String toString() {
-    return "Calendar{" +
-        "title='" + title + '\'' +
-        ", eventList=" + eventList +
-        '}';
+    return "Calendar{"
+        + "title='" + title + '\''
+        + ", eventList=" + eventList
+        + '}';
   }
 
-  private boolean checkIfEventIsInRange (Event event, String startDate, String endDate) {
+  private boolean checkIfEventIsInRange(Event event, String startDate, String endDate) {
     LocalDate eventStart = LocalDate.parse(event.getStartDate());
     LocalDate eventEnd = LocalDate.parse(event.getEndDate());
     LocalDate rangeStart = LocalDate.parse(startDate);
@@ -378,18 +419,19 @@ public class Calendar {
     }
 
     // Determine the final values (use new values if provided, otherwise keep old values)
-    String finalSubject = newSubject != null ? newSubject : event.getSubject();
+    final String finalSubject = newSubject != null ? newSubject : event.getSubject();
     String finalStartDate = newStartDate != null ? newStartDate : event.getStartDate();
     String finalEndDate = newEndDate != null ? newEndDate : event.getEndDate();
     String finalStartTime = newStartTime != null ? newStartTime : event.getStartTime();
     String finalEndTime = newEndTime != null ? newEndTime : event.getEndTime();
-    Boolean finalIsPublic = newIsPublic != null ? newIsPublic : event.getPublic();
-    String finalDescription = newDescription != null ? newDescription : event.getDescription();
-    String finalLocation = newLocation != null ? newLocation : event.getLocation();
+    final Boolean finalIsPublic = newIsPublic != null ? newIsPublic : event.getPublic();
+    final String finalDescription = newDescription != null
+        ? newDescription : event.getDescription();
+    final String finalLocation = newLocation != null ? newLocation : event.getLocation();
 
     // Validate that both times are null or both are non-null (for the final state)
-    if ((finalStartTime == null && finalEndTime != null) ||
-        (finalStartTime != null && finalEndTime == null)) {
+    if ((finalStartTime == null && finalEndTime != null)
+        || (finalStartTime != null && finalEndTime == null)) {
       throw new IllegalArgumentException("Both start time and end time must be null, "
           + "or both must be non-null");
     }
@@ -438,8 +480,8 @@ public class Calendar {
       // Check against all events in eventList (excluding the original event)
       for (Event existingEvent : eventList) {
         if (existingEvent != event) {
-          if (isOverlapping(tempEvent, existingEvent) ||
-              isOverlapping(existingEvent, tempEvent)) {
+          if (isOverlapping(tempEvent, existingEvent)
+              || isOverlapping(existingEvent, tempEvent)) {
             throw new IllegalArgumentException("Updated event conflicts with existing event");
           }
         }
@@ -449,8 +491,8 @@ public class Calendar {
       for (RecurrentEvent recurrentEvent : recurrentEvents) {
         for (Event recurrentEventInstance : recurrentEvent.getEvents()) {
           if (recurrentEventInstance != event) {
-            if (isOverlapping(tempEvent, recurrentEventInstance) ||
-                isOverlapping(recurrentEventInstance, tempEvent)) {
+            if (isOverlapping(tempEvent, recurrentEventInstance)
+                || isOverlapping(recurrentEventInstance, tempEvent)) {
               throw new IllegalArgumentException("Updated event conflicts with existing recurrent "
                   + "event");
             }
@@ -482,8 +524,10 @@ public class Calendar {
    *
    * @param recurrentEventId the unique ID of the recurrent event series to edit
    * @param newSubject the new subject for all instances, or null to keep current
-   * @param newStartTime the new start time for all instances (format: "HH:mm:ss"), or null to keep current
-   * @param newEndTime the new end time for all instances (format: "HH:mm:ss"), or null to keep current
+   * @param newStartTime the new start time for all instances (format: "HH:mm:ss"),
+   *                     or null to keep current
+   * @param newEndTime the new end time for all instances (format: "HH:mm:ss"),
+   *                   or null to keep current
    * @param newIsPublic the new visibility setting for all instances, or null to keep current
    * @param newDescription the new description for all instances, or null to keep current
    * @param newLocation the new location for all instances, or null to keep current
@@ -525,12 +569,13 @@ public class Calendar {
     String finalStartTime = newStartTime != null ? newStartTime : firstInstance.getStartTime();
     String finalEndTime = newEndTime != null ? newEndTime : firstInstance.getEndTime();
     Boolean finalIsPublic = newIsPublic != null ? newIsPublic : firstInstance.getPublic();
-    String finalDescription = newDescription != null ? newDescription : firstInstance.getDescription();
+    String finalDescription = newDescription != null
+        ? newDescription : firstInstance.getDescription();
     String finalLocation = newLocation != null ? newLocation : firstInstance.getLocation();
 
     // Validate that both times are null or both are non-null (for the final state)
-    if ((finalStartTime == null && finalEndTime != null) ||
-        (finalStartTime != null && finalEndTime == null)) {
+    if ((finalStartTime == null && finalEndTime != null)
+        || (finalStartTime != null && finalEndTime == null)) {
       throw new IllegalArgumentException("Both start time and end time must be null, "
           + "or both must be non-null");
     }
@@ -572,8 +617,8 @@ public class Calendar {
 
         // Check against all events in eventList
         for (Event existingEvent : eventList) {
-          if (isOverlapping(tempEvent, existingEvent) ||
-              isOverlapping(existingEvent, tempEvent)) {
+          if (isOverlapping(tempEvent, existingEvent)
+              || isOverlapping(existingEvent, tempEvent)) {
             throw new IllegalArgumentException("Updated recurrent event would conflict with "
                 + "existing event on " + instance.getStartDate());
           }
@@ -587,8 +632,8 @@ public class Calendar {
               continue;
             }
 
-            if (isOverlapping(tempEvent, recurrentEventInstance) ||
-                isOverlapping(recurrentEventInstance, tempEvent)) {
+            if (isOverlapping(tempEvent, recurrentEventInstance)
+                || isOverlapping(recurrentEventInstance, tempEvent)) {
               throw new IllegalArgumentException("Updated recurrent event would conflict with "
                   + "existing recurrent event on " + instance.getStartDate());
             }
@@ -624,23 +669,24 @@ public class Calendar {
    * @param filePath the path where the CSV file should be saved
    * @throws IOException if an I/O error occurs while writing the file
    */
-  public void exportToCSV(String filePath) throws IOException {
+  public void exportToCsv(String filePath) throws IOException {
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
 
     try (FileWriter writer = new FileWriter(filePath)) {
       // Write CSV header
-      writer.append("Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,Location,Private\n");
+      writer.append("Subject,Start Date,Start Time,End Date,End Time,"
+          + "All Day Event,Description,Location,Private\n");
 
       // Write all regular events
       for (Event event : eventList) {
-        writeEventToCSV(writer, event, dateFormatter, timeFormatter);
+        writeEventToCsv(writer, event, dateFormatter, timeFormatter);
       }
 
       // Write all recurrent events
       for (RecurrentEvent recurrentEvent : recurrentEvents) {
         for (Event event : recurrentEvent.getEvents()) {
-          writeEventToCSV(writer, event, dateFormatter, timeFormatter);
+          writeEventToCsv(writer, event, dateFormatter, timeFormatter);
         }
       }
     }
@@ -655,11 +701,11 @@ public class Calendar {
    * @param timeFormatter the formatter for times
    * @throws IOException if an I/O error occurs while writing
    */
-  private void writeEventToCSV(FileWriter writer, Event event,
+  private void writeEventToCsv(FileWriter writer, Event event,
                                 DateTimeFormatter dateFormatter,
                                 DateTimeFormatter timeFormatter) throws IOException {
     // Subject (required) - escape if contains commas
-    String subject = escapeCSVField(event.getSubject());
+    String subject = escapeCsvField(event.getSubject());
     writer.append(subject).append(",");
 
     // Start Date (required)
@@ -691,13 +737,13 @@ public class Calendar {
     writer.append(isAllDayEvent ? "True" : "False").append(",");
 
     // Description (optional) - escape if contains commas
-    String description = event.getDescription() != null ?
-        escapeCSVField(event.getDescription()) : "";
+    String description = event.getDescription() != null
+        ? escapeCsvField(event.getDescription()) : "";
     writer.append(description).append(",");
 
     // Location (optional) - escape if contains commas
-    String location = event.getLocation() != null ?
-        escapeCSVField(event.getLocation()) : "";
+    String location = event.getLocation() != null
+        ? escapeCsvField(event.getLocation()) : "";
     writer.append(location).append(",");
 
     // Private (opposite of isPublic)
@@ -715,7 +761,7 @@ public class Calendar {
    * @param field the field to escape
    * @return the escaped field
    */
-  private String escapeCSVField(String field) {
+  private String escapeCsvField(String field) {
     if (field == null) {
       return "";
     }
