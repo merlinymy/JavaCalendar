@@ -7,23 +7,39 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
- * Pattern used to create a recurrent event.
+ * Represents a pattern used to create a {@link RecurrentEvent}recurrent event.
+ * There are two ways to create a pattern. You can provide a number represents the occurrence
+ * times of an event. Or you can provide a date represents the date
+ * that this recurrent event will end. You have to provide the days this recurrent event is on.
  */
 public class RecurrencePattern {
   private Integer recurrenceNumToEnd;
   private LocalDate dateTimeToEnd;
   private List<String> days;
-  private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+  private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private enum RecurrenceDay {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
   }
 
+  /**
+   * Create a recurrence pattern from num of occurrence and days when an event happens.
+   *
+   * @param recurrenceNum the occurrence count of the event before it ends.
+   * @param days the days when the event happens.
+   */
   public RecurrencePattern(Integer recurrenceNum, List<String> days) {
     validateDaysAndAssignDays(days);
     validateRecurrenceNumAndAssignNum(recurrenceNum);
   }
 
+  /**
+   * Create a recurrence pattern from the end date of a recurrence event and days when
+   * an event happens.
+   *
+   * @param dateTimeToEnd the end date of a recurrence event.
+   * @param days the days when the event happens.
+   */
   public RecurrencePattern(String dateTimeToEnd, List<String> days) {
     validateDaysAndAssignDays(days);
     validateEndDateAndAssignEndDate(dateTimeToEnd);
@@ -63,14 +79,20 @@ public class RecurrencePattern {
     }
   }
 
+  /**
+   * Get the occurrence count of the event before it ends.
+   *
+   * @return the occurrence count of the event before it ends.
+   */
   public Integer getRecurrenceNumToEnd() {
     return recurrenceNumToEnd;
   }
 
-  public void setRecurrenceNumToEnd(int recurrenceNumToEnd) {
-    this.recurrenceNumToEnd = recurrenceNumToEnd;
-  }
-
+  /**
+   * Get the end date of the recurrent event.
+   *
+   * @return the end date of the recurrent event.
+   */
   public String getDateTimeToEnd() {
     if (dateTimeToEnd == null) {
       return null;
@@ -78,24 +100,21 @@ public class RecurrencePattern {
     return dateTimeToEnd.format(formatter);
   }
 
-  public void setDateTimeToEnd(LocalDate dateTimeToEnd) {
-    this.dateTimeToEnd = dateTimeToEnd;
-  }
-
+  /**
+   * Get the days of when a recurrent event happens.
+   *
+   * @return a list of the days of when a recurrent event happens.
+   */
   public List<String> getDays() {
     return days;
   }
 
-  public void setDays(List<String> days) {
-    this.days = days;
-  }
-
   @Override
   public String toString() {
-    return "RecurrencePattern{" +
-        "recurrenceNumToEnd=" + recurrenceNumToEnd +
-        ", dateTimeToEnd=" + dateTimeToEnd +
-        ", days=" + days +
-        '}';
+    return "RecurrencePattern{"
+        + "recurrenceNumToEnd=" + recurrenceNumToEnd
+        + ", dateTimeToEnd=" + dateTimeToEnd
+        + ", days=" + days
+        + '}';
   }
 }
