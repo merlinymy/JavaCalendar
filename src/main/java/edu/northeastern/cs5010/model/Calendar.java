@@ -9,21 +9,24 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * An object that represents a calendar. A calendar has a title, a list of non-recurrent events, and
- * a list of recurrent events. A calendar has a setting to toggle if conflict events are allowed.
+ * Represents a calendar that manages events and recurrent events, with support for
+ * features such as date and time conflict checking, editing, and import/export functionality.
  */
 public class Calendar {
 
   // TODO: use Map for events: key would be a combination of subject, and start date
   private String title;
-  private final List<Event> eventList = new ArrayList<Event>();
-  private final List<RecurrentEvent> recurrentEvents = new ArrayList<RecurrentEvent>();
+  private final List<Event> eventList = new ArrayList<>();
+  private final List<RecurrentEvent> recurrentEvents = new ArrayList<>();
   // Additional configuration
   private Boolean allowConflictEvents = false;
+  private final List<CalendarListener> listeners = new ArrayList<>();
+
 
   /**
    * Creates a new instance of the Calendar with the specified title.
@@ -216,6 +219,10 @@ public class Calendar {
     }
 
     eventList.add(newEvent);
+
+    // notify view
+    announceEventAdded(newEvent);
+
     System.out.println("Add event successful");
   }
 
@@ -260,7 +267,12 @@ public class Calendar {
 
     // If no conflicts or conflicts are allowed, add the recurrent event
     recurrentEvents.add(newRecurrentEvent);
+
+    // notify view
+    announceRecurrentEventsAdded(newRecurrentEvent);
+
     System.out.println("Add recurrent event successful");
+
   }
 
 
@@ -516,6 +528,9 @@ public class Calendar {
     event.setPublic(finalIsPublic);
     event.setDescription(finalDescription);
     event.setLocation(finalLocation);
+
+    // notify view
+    announceEventModified(event);
   }
 
   /**
@@ -654,9 +669,48 @@ public class Calendar {
       re.setPublic(finalIsPublic);
       re.setDescription(finalDescription);
       re.setLocation(finalLocation);
+
+      // notify view
+      announceEventModified(re);
     }
 
     System.out.println("All instances in recurrent event series edited successfully");
+  }
+
+  /**
+   * Adds a listener to the calendar to receive notifications about event changes.
+   *
+   * @param listener the {@link CalendarListener} listener to add.
+   */
+  public void addCalendarListener(CalendarListener listener) {
+    listeners.add(listener);
+  }
+
+  /**
+   * Removes a previously added {@link CalendarListener} from the calendar.
+   *
+   * @param listener the {@link CalendarListener} to remove.
+   */
+  public void removeCalendarListener(CalendarListener listener) {
+    listeners.remove(listener);
+  }
+
+  private void announceEventAdded(Event event) {
+    for (CalendarListener listener :  listeners) {
+      listener.onEventAdded(event);
+    }
+  }
+
+  private void announceRecurrentEventsAdded(RecurrentEvent re) {
+    for (CalendarListener listener : listeners) {
+      listener.onRecurrentEventAdded(re);
+    }
+  }
+
+  private void announceEventModified(Event event) {
+    for (CalendarListener listener: listeners) {
+      listener.onEventModified(event);
+    }
   }
 
   /**
