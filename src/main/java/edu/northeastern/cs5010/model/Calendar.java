@@ -1,5 +1,7 @@
 package edu.northeastern.cs5010.model;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -750,6 +752,135 @@ public class Calendar {
       return "\"" + field.replace("\"", "\"\"") + "\"";
     }
 
+    return field;
+  }
+
+  /**
+   * Imports a calendar from a CSV file previously exported by {@link #exportToCsv(String)}.
+   * The title is provided by the caller; events are reconstructed as single events.
+   *
+   * @param title the calendar title to assign.
+   * @param filePath path to the CSV file to load.
+   * @return a new {@link Calendar} populated with events from the CSV.
+   * @throws IOException if reading the file fails or format is invalid.
+   */
+  public static Calendar importFromCsv(String title, String filePath) throws IOException {
+    DateTimeFormatter csvDateFmt = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+    DateTimeFormatter csvTimeFmt = DateTimeFormatter.ofPattern("h:mm a");
+    DateTimeFormatter hhmmss = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+    Calendar calendar = new Calendar(title);
+
+    try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+      String header = br.readLine();
+      if (header == null) {
+        return calendar; // empty file, empty calendar
+      }
+
+      // Basic header validation (lenient: just ensure first few columns match)
+      String expectedPrefix = "Subject,Start Date,Start Time,End Date,End Time,All Day Event";
+      if (!header.startsWith(expectedPrefix)) {
+        throw new IOException("Unexpected CSV header format");
+      }
+
+      String line;
+      while ((line = br.readLine()) != null) {
+        if (line.isBlank()) {
+          continue;
+        }
+        List<String> cols = parseCsvLine(line);
+        // Expected 9 columns based on export
+        if (cols.size() < 9) {
+          throw new IOException("Malformed CSV line: " + line);
+        }
+
+        String subject = unescapeCsvField(cols.get(0));
+        String startDateStr = cols.get(1);
+        String startTimeStr = cols.get(2);
+        String endDateStr = cols.get(3);
+        String endTimeStr = cols.get(4);
+        String allDayStr = cols.get(5);
+        String description = unescapeCsvField(cols.get(6));
+        String location = unescapeCsvField(cols.get(7));
+        String privateStr = cols.get(8);
+
+        // Convert dates from MM/dd/yyyy to yyyy-MM-dd
+        LocalDate startDate = LocalDate.parse(startDateStr, csvDateFmt);
+        LocalDate endDate = LocalDate.parse(endDateStr, csvDateFmt);
+
+        Event.Builder builder = new Event.Builder(subject,
+            startDate.toString(), endDate.toString());
+
+        boolean isAllDay = "True".equalsIgnoreCase(allDayStr);
+        if (!isAllDay) {
+          // Convert times from h:mm a to HH:mm:ss
+          if (startTimeStr != null && !startTimeStr.isBlank()) {
+            LocalTime st = LocalTime.parse(startTimeStr, csvTimeFmt);
+            builder.startTime(st.format(hhmmss));
+          }
+          if (endTimeStr != null && !endTimeStr.isBlank()) {
+            LocalTime et = LocalTime.parse(endTimeStr, csvTimeFmt);
+            builder.endTime(et.format(hhmmss));
+          }
+        }
+
+        if (description != null && !description.isEmpty()) {
+          builder.description(description);
+        }
+        if (location != null && !location.isEmpty()) {
+          builder.location(location);
+        }
+
+        // Private column is opposite of isPublic
+        Boolean isPublic = (privateStr != null && privateStr.equalsIgnoreCase("True")) ? Boolean.FALSE
+            : Boolean.TRUE;
+        builder.isPublic(isPublic);
+
+        calendar.addEvent(builder.build());
+      }
+    }
+
+    return calendar;
+  }
+
+  // Minimal CSV parser supporting quotes and commas as produced by export
+  private static List<String> parseCsvLine(String line) {
+    List<String> out = new ArrayList<>();
+    StringBuilder cur = new StringBuilder();
+    boolean inQuotes = false;
+    for (int i = 0; i < line.length(); i++) {
+      char c = line.charAt(i);
+      if (inQuotes) {
+        if (c == '\"') {
+          // Peek next for escaped quote
+          if (i + 1 < line.length() && line.charAt(i + 1) == '\"') {
+            cur.append('\"');
+            i++; // skip next
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          cur.append(c);
+        }
+      } else {
+        if (c == ',') {
+          out.add(cur.toString());
+          cur.setLength(0);
+        } else if (c == '\"') {
+          inQuotes = true;
+        } else {
+          cur.append(c);
+        }
+      }
+    }
+    out.add(cur.toString());
+    return out;
+  }
+
+  private static String unescapeCsvField(String field) {
+    if (field == null) {
+      return null;
+    }
     return field;
   }
 
