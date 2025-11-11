@@ -681,18 +681,26 @@ public class Calendar {
    * Adds a listener to the calendar to receive notifications about event changes.
    *
    * @param listener the {@link CalendarListener} listener to add.
+   * @throws NullPointerException if {@code listener} is null.
    */
   public void addCalendarListener(CalendarListener listener) {
-    listeners.add(listener);
+    CalendarListener nonNullListener = Objects.requireNonNull(listener,
+        "listener cannot be null");
+    if (!listeners.contains(nonNullListener)) {
+      listeners.add(nonNullListener);
+    }
   }
 
   /**
    * Removes a previously added {@link CalendarListener} from the calendar.
    *
    * @param listener the {@link CalendarListener} to remove.
+   * @throws NullPointerException if {@code listener} is null.
    */
   public void removeCalendarListener(CalendarListener listener) {
-    listeners.remove(listener);
+    CalendarListener nonNullListener = Objects.requireNonNull(listener,
+        "listener cannot be null");
+    listeners.remove(nonNullListener);
   }
 
   private void announceEventAdded(Event event) {

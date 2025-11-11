@@ -138,4 +138,27 @@ class CalendarListenerTest {
     assertEquals(1, l2.added.size());
     assertEquals(0, l2.modified.size());
   }
+
+  @Test
+  void addingNullListenerThrows() {
+    assertThrows(NullPointerException.class, () -> calendar.addCalendarListener(null));
+  }
+
+  @Test
+  void duplicateListenerOnlyRegisteredOnce() {
+    TestListener listener = new TestListener();
+    calendar.addCalendarListener(listener);
+    calendar.addCalendarListener(listener);
+
+    Event e = new Event.Builder("All Hands", "2025-06-01", "2025-06-01")
+        .startTime("11:00:00").endTime("12:00:00").build();
+    calendar.addEvent(e);
+
+    assertEquals(1, listener.added.size());
+  }
+
+  @Test
+  void removingNullListenerThrows() {
+    assertThrows(NullPointerException.class, () -> calendar.removeCalendarListener(null));
+  }
 }
