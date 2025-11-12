@@ -716,7 +716,7 @@ public class Calendar {
   }
 
   private void announceEventModified(Event event) {
-    for (CalendarListener listener: listeners) {
+    for (CalendarListener listener : listeners) {
       listener.onEventModified(event);
     }
   }
@@ -864,7 +864,7 @@ public class Calendar {
         String allDayStr = cols.get(5);
         String description = unescapeCsvField(cols.get(6));
         String location = unescapeCsvField(cols.get(7));
-        String privateStr = cols.get(8);
+        final String privateStr = cols.get(8);
 
         // Convert dates from MM/dd/yyyy to yyyy-MM-dd
         LocalDate startDate = LocalDate.parse(startDateStr, csvDateFmt);
@@ -894,7 +894,8 @@ public class Calendar {
         }
 
         // Private column is opposite of isPublic
-        Boolean isPublic = (privateStr != null && privateStr.equalsIgnoreCase("True")) ? Boolean.FALSE
+        Boolean isPublic = (privateStr != null && privateStr.equalsIgnoreCase("True"))
+            ? Boolean.FALSE
             : Boolean.TRUE;
         builder.isPublic(isPublic);
 

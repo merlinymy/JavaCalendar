@@ -11,7 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Represents a recurring event that generates multiple event instances based on a recurrence pattern.
+ * Represents a recurring event that generates multiple event instances
+ * based on a recurrence pattern.
  */
 
 public class RecurrentEvent {

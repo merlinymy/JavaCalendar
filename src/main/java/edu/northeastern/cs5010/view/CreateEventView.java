@@ -19,6 +19,21 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.MaskFormatter;
 
+/**
+ * Represents a view for creating an event in the application. This class extends
+ * the {@code JDialog} to provide a modal dialog interface for user input and validation.
+ * It integrates with a {@link Calendar} object to save the created event data.
+ * The dialog includes fields for configuring the event, such as:
+ * - Subject
+ * - Start date and time
+ * - End date and time
+ * - All-day event option
+ * - Public/private visibility
+ * - Event location
+ * - Description
+ * Includes input validation for date and time ranges, checks for required fields,
+ * and provides status messages for errors or success.
+ */
 public class CreateEventView extends JDialog {
 
   private final Calendar calendar;
@@ -34,6 +49,14 @@ public class CreateEventView extends JDialog {
   private final JTextField locationField = new JTextField(20);
   private final JLabel statusLabel = new JLabel(" ");
 
+  /**
+   * Constructs a modal dialog for creating a new event.
+   * Provides a user interface to input event details such as name,
+   * start and end dates, time, location, and description.
+   *
+   * @param owner the parent JFrame that owns this dialog
+   * @param calendar the Calendar instance to which the new event will be added
+   */
   public CreateEventView(JFrame owner, Calendar calendar) {
     super(owner, "Create Event", true);
     this.calendar = calendar;
@@ -44,7 +67,7 @@ public class CreateEventView extends JDialog {
   }
 
   private void initUi() {
-    JPanel form = new JPanel(new GridBagLayout());
+    final JPanel form = new JPanel(new GridBagLayout());
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.insets = new Insets(4, 4, 4, 4);
     gbc.anchor = GridBagConstraints.WEST;

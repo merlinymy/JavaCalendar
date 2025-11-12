@@ -18,10 +18,20 @@ public class CalendarsRepository {
 
   private final List<Calendar> calendars = new ArrayList<>();
 
+  /**
+   * Adds a calendar to the repository.
+   *
+   * @param calendar the calendar to be added to the repository
+   */
   public void add(Calendar calendar) {
     calendars.add(calendar);
   }
 
+  /**
+   * Returns an unmodifiable view of the list of calendars stored in the repository.
+   *
+   * @return an unmodifiable list of calendars
+   */
   public List<Calendar> list() {
     return Collections.unmodifiableList(calendars);
   }

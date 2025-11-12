@@ -50,6 +50,13 @@ public class EventDetailView extends JDialog {
   private final String originalDescription;
   private final String originalLocation;
 
+  /**
+   * Constructs an EventDetailView dialog to display and edit details of an event.
+   *
+   * @param owner the parent frame that owns this dialog
+   * @param calendar the calendar associated with the event
+   * @param event the event whose details are to be viewed or edited
+   */
   public EventDetailView(JFrame owner, Calendar calendar, Event event) {
     super(owner, "Event Details", true);
     this.calendar = calendar;
@@ -71,7 +78,7 @@ public class EventDetailView extends JDialog {
   }
 
   private void initUi() {
-    JPanel form = new JPanel(new GridBagLayout());
+    final JPanel form = new JPanel(new GridBagLayout());
     GridBagConstraints gbc = new GridBagConstraints();
     gbc.insets = new Insets(4, 4, 4, 4);
     gbc.anchor = GridBagConstraints.WEST;

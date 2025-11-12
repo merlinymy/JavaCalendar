@@ -8,10 +8,21 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+/**
+ * The CalendarController class serves as the main entry point for a simple calendar
+ * management application.
+ *
+ * {@link CalendarsRepository}, which can save and restore calendar data to and from files.
+ */
 public class CalendarController {
 
   private static final String STORAGE_DIR = System.getProperty("user.home") + "/.mycalendar";
 
+  /**
+   * The main entry point for the calendar management application.
+   *
+   * @param args command-line arguments; not used by this application
+   */
   public static void main(String[] args) {
     SwingUtilities.invokeLater(() -> {
       try {
